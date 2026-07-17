@@ -1,95 +1,44 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { Grid } from "@components/Grid";
+import { projects } from "@data/projects";
+import { fetchGithubRepoMeta, type GithubRepoMeta } from "@utils/github";
 
-export default function Home() {
+import styles from "./home.module.scss";
+
+export const revalidate = 86400;
+
+async function loadGithubBySlug(): Promise<
+  Record<string, GithubRepoMeta | null>
+> {
+  const entries = await Promise.all(
+    projects.map(async (project) => {
+      const meta = await fetchGithubRepoMeta(project.repo);
+      return [project.slug, meta] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+export default async function HomePage() {
+  const githubBySlug = await loadGithubBySlug();
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
+    <main className={styles.home}>
+      <section className={styles.home__hero}>
+        <p className={styles.home__eyebrow}>Portfolio</p>
+        <h1 className={styles.home__title}>Projects, live links, and the odd joke.</h1>
+        <p className={styles.home__lede}>
+          A grid of things I have built — apps you can open, code that is being
+          rewritten, and showcase pieces that do not belong on a webpage. Each
+          card leads to a project page; live demos open outward from there.
         </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+      </section>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <section id="projects" aria-labelledby="projects-heading">
+        <h2 id="projects-heading" className={styles.home__sectionTitle}>
+          Projects
+        </h2>
+        <Grid projects={projects} githubBySlug={githubBySlug} />
+      </section>
     </main>
   );
 }

@@ -1,0 +1,99 @@
+@use "../../styles/tokens" as *;
+
+.gridItem {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  height: 100%;
+  padding: $space-5;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: rgba($color-surface, 0.72);
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.gridItem:hover {
+  border-color: rgba($color-accent, 0.35);
+  background: rgba($color-surface, 0.95);
+  transform: translateY(-1px);
+  color: inherit;
+}
+
+.gridItem:focus-visible {
+  outline: 2px solid $color-accent;
+  outline-offset: 2px;
+}
+
+.gridItem__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+}
+
+.gridItem__year {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $color-ink-muted;
+}
+
+.gridItem__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.gridItem__description {
+  margin: 0;
+  flex: 1;
+  color: $color-ink-muted;
+  font-size: 0.9375rem;
+}
+
+.gridItem__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridItem__tag {
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $color-ink-muted;
+}
+
+.gridItem__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2;
+  margin-top: auto;
+  padding-top: $space-2;
+  border-top: 1px solid $color-border;
+  font-size: 0.8125rem;
+  color: $color-ink-muted;
+}
+
+.gridItem__language {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+}
+
+.gridItem__cta {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $color-accent;
+}

@@ -1,0 +1,36 @@
+@use "../../styles/tokens" as *;
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.statusBadge--live {
+  color: $color-live;
+  border-color: rgba($color-live, 0.35);
+}
+
+.statusBadge--in-progress {
+  color: $color-progress;
+  border-color: rgba($color-progress, 0.35);
+}
+
+.statusBadge--rewrite-planned {
+  color: $color-rewrite;
+  border-color: rgba($color-rewrite, 0.35);
+}
+
+.statusBadge--showcase {
+  color: $color-showcase;
+  border-color: rgba($color-showcase, 0.35);
+}

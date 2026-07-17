@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Portfolio
 
-## Getting Started
+Personal portfolio hub: a Next.js site with a project grid that links to detail pages (and outward to live apps / GitHub).
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Sass + CSS Modules (BEM)
+- Jest + Testing Library + MSW
+- Optional MDX writeups per project
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for conventions carried into future rewrites.
+
+## Develop
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm test
+npm run build
+npm run lint
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Optional: set `GITHUB_TOKEN` in `.env.local` for higher GitHub API rate limits when enriching repo metadata at build time.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Deploy (Vercel)
 
-## Learn More
+1. Import `ryanpiv/portfolio` in the [Vercel dashboard](https://vercel.com/new).
+2. Framework preset: Next.js (defaults are fine).
+3. Add your custom domain on the project’s Domains settings and point DNS at Vercel.
 
-To learn more about Next.js, take a look at the following resources:
+## Content
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Edit the grid in [`src/data/projects.ts`](src/data/projects.ts)
+- Add a writeup at `src/content/projects/{slug}.mdx` and register it in [`src/utils/getProjectPage.ts`](src/utils/getProjectPage.ts)

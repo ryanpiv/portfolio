@@ -1,0 +1,62 @@
+@use "../../styles/tokens" as *;
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  height: 3.5rem;
+  padding: 0 $space-5;
+  border-bottom: 1px solid $color-border;
+  background: rgba($color-canvas, 0.86);
+  backdrop-filter: blur(10px);
+}
+
+.nav__brand {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.nav__brand:hover {
+  color: $color-accent;
+}
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.nav__link {
+  font-size: 0.875rem;
+  color: $color-ink-muted;
+  text-decoration: none;
+}
+
+.nav__link:hover {
+  color: $color-ink;
+}
+
+.nav__toggle {
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  background: transparent;
+  padding: 0.35rem 0.65rem;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $color-ink-muted;
+}
+
+.nav__toggle:hover {
+  color: $color-ink;
+  border-color: rgba($color-accent, 0.35);
+}
+
+.nav__toggle:focus-visible {
+  outline: 2px solid $color-accent;
+  outline-offset: 2px;
+}

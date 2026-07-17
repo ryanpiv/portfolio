@@ -1,0 +1,21 @@
+@use "../../styles/tokens" as *;
+
+.backgroundLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      rgba($color-accent, 0.06),
+      transparent 55%
+    ),
+    $color-canvas;
+}
+
+/* Future: replace with floating star grid canvas */
+.backgroundLayer__canvasSlot {
+  position: absolute;
+  inset: 0;
+}

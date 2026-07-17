@@ -1,0 +1,62 @@
+@use "../../styles/tokens" as *;
+
+.projectPage {
+  width: min(100% - 2 * $space-5, $content-max);
+  margin: 0 auto;
+  padding: $space-7 0 $space-8;
+}
+
+.projectPage__back {
+  display: inline-block;
+  margin-bottom: $space-6;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $color-ink-muted;
+  text-decoration: none;
+}
+
+.projectPage__back:hover {
+  color: $color-accent;
+}
+
+.projectPage__writeup {
+  margin-top: $space-7;
+  max-width: 42rem;
+  color: $color-ink;
+  border-top: 1px solid $color-border;
+  padding-top: $space-6;
+
+  :global(h2) {
+    margin: $space-6 0 $space-3;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  :global(p),
+  :global(ul) {
+    color: $color-ink-muted;
+  }
+
+  :global(ul) {
+    padding-left: 1.2rem;
+  }
+
+  :global(li + li) {
+    margin-top: $space-2;
+  }
+}
+
+.projectPage__fallback {
+  margin-top: $space-7;
+  max-width: 42rem;
+  padding-top: $space-6;
+  border-top: 1px solid $color-border;
+  color: $color-ink-muted;
+  font-size: 0.975rem;
+}
