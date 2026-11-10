@@ -1,10 +1,7 @@
 import { http, HttpResponse } from "msw";
 
 import { server } from "@msw/server";
-import {
-  fetchGithubRepoMeta,
-  parseGithubRepoUrl,
-} from "@utils/github";
+import { fetchGithubMetaBySlug, fetchGithubRepoMeta, parseGithubRepoUrl } from "@utils/github";
 
 describe("parseGithubRepoUrl", () => {
   it("parses a standard github repo url", () => {
@@ -63,5 +60,16 @@ describe("fetchGithubRepoMeta", () => {
       pushedAt: null,
       stars: null,
     });
+  });
+});
+
+describe("fetchGithubMetaBySlug", () => {
+  it("keys results by slug and isolates failures per repo", async () => {
+    const result = await fetchGithubMetaBySlug([
+      { slug: "parse-ai", repo: "https://github.com/ryanpiv/parse-ai" },
+      { slug: "gone", repo: "https://github.com/missing/gone" },
+    ]);
+    expect(result["parse-ai"].language).toBe("TypeScript");
+    expect(result.gone).toEqual({ language: null, pushedAt: null, stars: null });
   });
 });

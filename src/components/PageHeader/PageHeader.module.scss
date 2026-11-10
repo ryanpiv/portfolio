@@ -1,0 +1,20 @@
+@use "../../styles" as *;
+
+.pageHeader {
+  max-width: 36rem;
+  margin-bottom: $space-8;
+}
+
+.pageHeader__eyebrow {
+  @include eyebrow;
+  margin-bottom: $space-3;
+}
+
+.pageHeader__title {
+  @include display-title;
+}
+
+.pageHeader__lede {
+  @include lede;
+  margin-top: $space-5;
+}

@@ -72,6 +72,17 @@ export async function fetchGithubRepoMeta(
   }
 }
 
+/** Fetch repo metadata for many projects in parallel, keyed by slug. */
+export async function fetchGithubMetaBySlug(
+  items: ReadonlyArray<{ slug: string; repo: string }>,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Record<string, GithubRepoMeta>> {
+  const entries = await Promise.all(
+    items.map(async ({ slug, repo }) => [slug, await fetchGithubRepoMeta(repo, fetchImpl)] as const),
+  );
+  return Object.fromEntries(entries);
+}
+
 export async function enrichProjectRepo(
   repoUrl: string,
   fetchImpl: typeof fetch = fetch,

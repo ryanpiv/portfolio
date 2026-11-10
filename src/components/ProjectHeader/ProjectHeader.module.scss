@@ -1,4 +1,4 @@
-@use "../../styles/tokens" as *;
+@use "../../styles" as *;
 
 .projectHeader {
   display: flex;
@@ -14,61 +14,28 @@
   gap: $space-3;
 }
 
-.projectHeader__year {
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  color: $color-ink-muted;
+.projectHeader__year,
+.projectHeader__githubMeta {
+  @include mono-meta;
 }
 
 .projectHeader__title {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 600;
+  @include display-title(2rem, 2.75rem);
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
 
 .projectHeader__description {
-  margin: 0;
-  color: $color-ink-muted;
-  font-size: 1.125rem;
-  line-height: 1.65;
+  @include lede;
 }
 
 .projectHeader__links {
+  @include list-reset;
   display: flex;
   flex-wrap: wrap;
   gap: $space-3;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .projectHeader__link {
-  font-family: $font-mono;
-  font-size: 0.8125rem;
-  color: $color-accent;
-}
-
-.projectHeader__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $space-2;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.projectHeader__tag {
-  font-family: $font-mono;
-  font-size: 0.6875rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: $color-ink-muted;
-}
-
-.projectHeader__githubMeta {
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  color: $color-ink-muted;
+  @include mono-link;
 }

@@ -15,9 +15,11 @@ const config = {
     "^@components/(.*)$": "<rootDir>/src/components/$1",
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
     "^@data/(.*)$": "<rootDir>/src/data/$1",
+    "^@hooks/(.*)$": "<rootDir>/src/hooks/$1",
     "^@styles/(.*)$": "<rootDir>/src/styles/$1",
     "^@msw/(.*)$": "<rootDir>/src/msw/$1",
     "^@content/(.*)$": "<rootDir>/src/content/$1",
+    "\\.mdx$": "<rootDir>/jest.mdx-stub.tsx",
   },
 };
 

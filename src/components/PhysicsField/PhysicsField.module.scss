@@ -1,0 +1,38 @@
+@use "../../styles" as *;
+
+// Full-viewport stage. Sits under the sticky Nav (z-index 20) and above the
+// site BackgroundLayer; the WebGL canvas paints its own background color.
+
+.physicsField {
+  position: fixed;
+  inset: 0;
+  background: $color-canvas;
+  overflow: hidden;
+  user-select: none;
+}
+
+.physicsField--light {
+  background: $color-canvas-light;
+}
+
+.physicsField__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.physicsField__loading {
+  @include mono-label(0.75rem, 0.1em);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: $color-ink-muted;
+}

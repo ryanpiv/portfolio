@@ -1,0 +1,70 @@
+@use "../../styles" as *;
+
+.lab {
+  @include page-container;
+  padding: $space-8 0 $space-7;
+}
+
+.lab__list {
+  @include list-reset;
+  display: grid;
+  gap: $space-4;
+}
+
+.lab__item {
+  @include surface(1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-5;
+  padding: $space-5;
+}
+
+.lab__itemTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.lab__itemTagline {
+  @include mono-label(0.75rem, 0.06em);
+  margin: $space-1 0 0;
+  color: $color-accent;
+}
+
+.lab__itemDescription {
+  margin: $space-3 0 0;
+  max-width: 40rem;
+  color: $color-ink-muted;
+  line-height: 1.55;
+}
+
+.lab__links {
+  display: flex;
+  flex-shrink: 0;
+  gap: $space-3;
+}
+
+.lab__link {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: $color-ink;
+
+  &:hover {
+    border-color: rgba($color-accent, 0.4);
+    color: $color-accent;
+  }
+}
+
+.lab__note {
+  margin: $space-7 0 0;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: $color-ink-muted;
+}

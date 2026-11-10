@@ -9,6 +9,9 @@ $color-progress: #d4c48a;
 $color-rewrite: #c9a8e8;
 $color-showcase: #8ab4d4;
 
+// Light-theme canvas for the lab stage (mirrors LightingPreset.background).
+$color-canvas-light: #f2f2f0;
+
 $font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
 $font-mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
 
@@ -30,3 +33,4 @@ $bp-lg: 1024px;
 
 $content-max: 68rem;
 $sidebar-width: 16rem;
+$header-height: 3.5rem;

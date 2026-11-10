@@ -1,0 +1,122 @@
+@use "../../styles" as *;
+
+// The HUD floats over the WebGL canvas. Everything is pointer-events: none
+// except the controls, so drags pass through to the spheres. Child components
+// (PillGroup, StatusLegend) read the --hud-* custom properties for theming.
+
+.fieldHud {
+  --hud-ink: #{$color-ink};
+  --hud-muted: #{$color-ink-muted};
+  --hud-surface: rgba(12, 12, 14, 0.62);
+  --hud-border: #{$color-border};
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: $space-5;
+  color: var(--hud-ink);
+  pointer-events: none;
+}
+
+.fieldHud--light {
+  --hud-ink: #0c0c0e;
+  --hud-muted: #5a5a64;
+  --hud-surface: rgba(242, 242, 240, 0.72);
+  --hud-border: rgba(12, 12, 14, 0.14);
+}
+
+.fieldHud__top,
+.fieldHud__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-wrap: wrap;
+}
+
+.fieldHud__bottom {
+  align-items: flex-end;
+}
+
+.fieldHud__eyebrow {
+  @include mono-label(0.6875rem, 0.14em);
+  margin: 0 0 $space-2;
+  color: var(--hud-muted);
+}
+
+.fieldHud__title {
+  @include display-title(1.6rem, 2.2rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.fieldHud__tagline {
+  margin: $space-2 0 0;
+  color: var(--hud-muted);
+  font-size: 0.95rem;
+}
+
+.fieldHud__switches {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-2;
+  pointer-events: auto;
+}
+
+.fieldHud__controls {
+  position: absolute;
+  top: calc(#{$space-5} + 11.5rem);
+  right: $space-5;
+  width: 18rem;
+  max-height: calc(100% - 14rem);
+  overflow: auto;
+  pointer-events: auto;
+  border-radius: $radius-md;
+}
+
+.fieldHud__card {
+  max-width: 22rem;
+  min-height: 3rem;
+  padding: $space-3 $space-4;
+  border: 1px solid var(--hud-border);
+  border-radius: $radius-md;
+  background: var(--hud-surface);
+  backdrop-filter: blur(8px);
+}
+
+.fieldHud__cardMeta {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  margin-bottom: $space-2;
+}
+
+.fieldHud__year {
+  font-family: $font-mono;
+  font-size: 0.6875rem;
+  color: var(--hud-muted);
+}
+
+.fieldHud__cardTitle {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fieldHud__cardDescription {
+  margin: $space-1 0 0;
+  color: var(--hud-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.fieldHud__hint {
+  @include mono-label(0.6875rem, 0.04em);
+  margin: $space-2 0 0;
+  text-transform: none;
+  color: var(--hud-muted);
+}

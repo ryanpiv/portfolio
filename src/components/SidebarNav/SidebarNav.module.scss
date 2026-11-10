@@ -1,12 +1,12 @@
-@use "../../styles/tokens" as *;
+@use "../../styles" as *;
 
 .sidebarNav {
   position: fixed;
-  top: 3.5rem;
+  top: $header-height;
   right: 0;
   z-index: 30;
   width: min(100vw, $sidebar-width);
-  height: calc(100vh - 3.5rem);
+  height: calc(100vh - #{$header-height});
   padding: $space-5;
   border-left: 1px solid $color-border;
   background: rgba($color-surface, 0.97);
@@ -19,18 +19,13 @@
 }
 
 .sidebarNav__title {
+  @include mono-label;
   margin: 0 0 $space-4;
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: $color-ink-muted;
 }
 
 .sidebarNav__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include list-reset;
   display: flex;
   flex-direction: column;
   gap: $space-3;
@@ -40,15 +35,8 @@
   color: $color-ink;
   text-decoration: none;
   font-size: 0.9375rem;
-}
 
-.sidebarNav__link:hover {
-  color: $color-accent;
-}
-
-.sidebarNav__note {
-  margin-top: $space-6;
-  font-size: 0.8125rem;
-  color: $color-ink-muted;
-  line-height: 1.5;
+  &:hover {
+    color: $color-accent;
+  }
 }

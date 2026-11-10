@@ -4,6 +4,21 @@ export type ProjectStatus =
   | "rewrite-planned"
   | "showcase";
 
+/** Display order for statuses (most alive first). */
+export const PROJECT_STATUSES: readonly ProjectStatus[] = [
+  "live",
+  "in-progress",
+  "rewrite-planned",
+  "showcase",
+];
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  live: "Live",
+  "in-progress": "In progress",
+  "rewrite-planned": "Rewrite planned",
+  showcase: "Showcase",
+};
+
 export type Project = {
   slug: string;
   title: string;

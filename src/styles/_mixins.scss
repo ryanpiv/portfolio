@@ -1,14 +1,93 @@
 @use "tokens" as *;
 
-@mixin focus-ring {
-  outline: 2px solid $color-accent;
-  outline-offset: 2px;
+// ---------------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------------
+
+/// Centered page column with side gutters.
+@mixin page-container {
+  width: min(100% - 2 * $space-5, $content-max);
+  margin: 0 auto;
 }
 
 @mixin respond-up($breakpoint) {
   @media (min-width: $breakpoint) {
     @content;
   }
+}
+
+/// Strip default list chrome; pair with flex/grid for horizontal lists.
+@mixin list-reset {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// ---------------------------------------------------------------------------
+// Typography
+// ---------------------------------------------------------------------------
+
+/// Small uppercase monospace label (eyebrows, tags, pills, legends).
+@mixin mono-label($size: 0.75rem, $tracking: 0.08em) {
+  font-family: $font-mono;
+  font-size: $size;
+  letter-spacing: $tracking;
+  text-transform: uppercase;
+}
+
+/// Section eyebrow above a title.
+@mixin eyebrow {
+  @include mono-label(0.75rem, 0.14em);
+  margin: 0;
+  color: $color-ink-muted;
+}
+
+/// Large page title.
+@mixin display-title($min: 2.4rem, $max: 3.4rem) {
+  margin: 0;
+  font-size: clamp($min, 5vw, $max);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+/// Muted intro paragraph under a title.
+@mixin lede {
+  margin: 0;
+  color: $color-ink-muted;
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+/// Muted mono metadata (years, languages, timestamps).
+@mixin mono-meta {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $color-ink-muted;
+}
+
+// ---------------------------------------------------------------------------
+// Interaction
+// ---------------------------------------------------------------------------
+
+@mixin focus-ring {
+  outline: 2px solid $color-accent;
+  outline-offset: 2px;
+}
+
+/// Accent-colored mono text link (CTAs, "Open live →").
+@mixin mono-link($size: 0.8125rem) {
+  font-family: $font-mono;
+  font-size: $size;
+  color: $color-accent;
+  text-decoration: none;
+}
+
+/// Bordered surface shared by cards and panels.
+@mixin surface($alpha: 0.72) {
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: rgba($color-surface, $alpha);
 }
 
 @mixin visually-hidden {

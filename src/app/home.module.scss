@@ -1,45 +1,12 @@
-@use "../styles/tokens" as *;
+@use "../styles" as *;
 
 .home {
-  width: min(100% - 2 * $space-5, $content-max);
-  margin: 0 auto;
+  @include page-container;
   padding: $space-8 0 $space-7;
 }
 
-.home__hero {
-  max-width: 36rem;
-  margin-bottom: $space-8;
-}
-
-.home__eyebrow {
-  margin: 0 0 $space-3;
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: $color-ink-muted;
-}
-
-.home__title {
-  margin: 0;
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-.home__lede {
-  margin: $space-5 0 0;
-  color: $color-ink-muted;
-  font-size: 1.125rem;
-  line-height: 1.65;
-}
-
 .home__sectionTitle {
+  @include mono-label(0.75rem, 0.12em);
   margin: 0 0 $space-5;
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: $color-ink-muted;
 }

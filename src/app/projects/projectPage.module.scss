@@ -1,32 +1,32 @@
-@use "../../styles/tokens" as *;
+@use "../../styles" as *;
 
 .projectPage {
-  width: min(100% - 2 * $space-5, $content-max);
-  margin: 0 auto;
+  @include page-container;
   padding: $space-7 0 $space-8;
 }
 
 .projectPage__back {
+  @include mono-label(0.75rem, 0.08em);
   display: inline-block;
   margin-bottom: $space-6;
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: $color-ink-muted;
   text-decoration: none;
+
+  &:hover {
+    color: $color-accent;
+  }
 }
 
-.projectPage__back:hover {
-  color: $color-accent;
+.projectPage__writeup,
+.projectPage__fallback {
+  margin-top: $space-7;
+  max-width: 42rem;
+  padding-top: $space-6;
+  border-top: 1px solid $color-border;
 }
 
 .projectPage__writeup {
-  margin-top: $space-7;
-  max-width: 42rem;
   color: $color-ink;
-  border-top: 1px solid $color-border;
-  padding-top: $space-6;
 
   :global(h2) {
     margin: $space-6 0 $space-3;
@@ -53,10 +53,6 @@
 }
 
 .projectPage__fallback {
-  margin-top: $space-7;
-  max-width: 42rem;
-  padding-top: $space-6;
-  border-top: 1px solid $color-border;
   color: $color-ink-muted;
   font-size: 0.975rem;
 }

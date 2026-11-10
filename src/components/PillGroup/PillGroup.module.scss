@@ -1,0 +1,55 @@
+@use "../../styles" as *;
+
+// Themeable via custom properties; defaults match the dark site tokens.
+.pillGroup {
+  --pill-ink: var(--hud-ink, #{$color-ink});
+  --pill-muted: var(--hud-muted, #{$color-ink-muted});
+  --pill-surface: var(--hud-surface, rgba(12, 12, 14, 0.62));
+  --pill-border: var(--hud-border, #{$color-border});
+
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.pillGroup__label {
+  @include mono-label(0.625rem, 0.12em);
+  color: var(--pill-muted);
+}
+
+.pillGroup__pills {
+  display: inline-flex;
+  gap: $space-1;
+  padding: $space-1;
+  border: 1px solid var(--pill-border);
+  border-radius: 999px;
+  background: var(--pill-surface);
+  backdrop-filter: blur(8px);
+}
+
+.pillGroup__pill {
+  @include mono-label(0.6875rem, 0.06em);
+  padding: 0.25rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pill-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+
+  &:hover {
+    color: var(--pill-ink);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.pillGroup__pill--active {
+  color: var(--pill-ink);
+  background: rgba(127, 127, 127, 0.18);
+}
