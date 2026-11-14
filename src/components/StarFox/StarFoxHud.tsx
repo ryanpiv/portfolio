@@ -9,7 +9,9 @@ import { useStore } from "@hooks/useStore";
 
 import type { GamePhase, GameStore } from "./game/gameStore";
 import { MissionScreen } from "./MissionScreen";
+import { ShieldBar } from "./ShieldBar";
 import styles from "./StarFoxHud.module.scss";
+import { WaveCallout } from "./WaveCallout";
 
 type StarFoxHudProps = {
   theme: LabTheme;
@@ -42,15 +44,20 @@ export function StarFoxHud({ theme, onThemeChange, store, onRetry, controls }: S
       tagline={starFoxMeta.tagline}
       switches={<PillGroup label="Theme" options={THEME_OPTIONS} value={theme} onChange={onThemeChange} />}
       controls={controls}
-      center={<MissionScreen game={game} onRetry={onRetry} />}
+      center={
+        <>
+          <WaveCallout game={game} />
+          <MissionScreen game={game} onRetry={onRetry} />
+        </>
+      }
       footer={
         <LabHudCard live>
           <dl className={styles.readout}>
             <Readout label="wave" value={`${Math.min(game.wave + 1, game.waveCount)} / ${game.waveCount}`} />
             <Readout label="hits" value={`${game.hits} / ${game.total}`} />
             <Readout label="escaped" value={String(game.escaped)} />
-            <Readout label="shield" value={`${Math.round((100 * game.shield) / game.shieldMax)}%`} />
           </dl>
+          <ShieldBar shield={game.shield} shieldMax={game.shieldMax} />
           <LabHudHint>WASD / arrows to steer · {PHASE_HINT[game.phase]}</LabHudHint>
         </LabHudCard>
       }

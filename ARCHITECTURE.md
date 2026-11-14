@@ -67,7 +67,8 @@ PhysicsField/
   controls/      # Leva: useFieldControls + per-folder schema builders
 
 StarFox/
-  index.ts, StarFox.tsx, StarFoxScene.tsx, GameRun.tsx, StarFoxHud.tsx, MissionScreen.tsx, gameContext.ts
+  index.ts, StarFox.tsx, StarFoxScene.tsx, GameRun.tsx, gameContext.ts
+  StarFoxHud.tsx, ShieldBar.tsx, WaveCallout.tsx, MissionScreen.tsx   # DOM overlay, reads the game store
   hooks/         # useInput (keyboard + pointer → ref), useGameFrame (useFrame with clamped delta)
   game/          # sim (per-frame bus: lasers, shots, bursts), gameStore (HUD state + damage/hit records),
                  # waveDirector (pure sequencer), buildWave, fireShot

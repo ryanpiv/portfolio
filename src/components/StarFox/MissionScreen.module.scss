@@ -34,6 +34,44 @@
   color: var(--hud-muted);
 }
 
+.missionScreen__listLabel {
+  @include mono-label(0.625rem, 0.14em);
+  margin: $space-4 0 $space-2;
+  color: var(--hud-muted);
+}
+
+.missionScreen__list {
+  @include list-reset;
+  display: grid;
+  gap: $space-1;
+  max-height: 11rem;
+  overflow: auto;
+  text-align: left;
+}
+
+.missionScreen__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-1 0;
+}
+
+.missionScreen__link {
+  @include mono-label(0.75rem, 0.04em);
+  color: var(--hud-ink);
+  text-decoration: none;
+  text-transform: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
 .missionScreen__button {
   @include mono-label(0.6875rem, 0.1em);
   margin-top: $space-4;

@@ -28,6 +28,24 @@ describe("MissionScreen", () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
+  it("links every downed fighter to its project page", () => {
+    render(
+      <MissionScreen
+        game={{ ...base, phase: "complete", hits: 2, downed: ["parse-ai", "chattynator", "not-a-project"] }}
+        onRetry={() => {}}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Parse AI" })).toHaveAttribute("href", "/projects/parse-ai");
+    expect(screen.getByRole("link", { name: "Chattynator" })).toHaveAttribute("href", "/projects/chattynator");
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("Live")).toBeInTheDocument();
+  });
+
+  it("omits the list when nothing was shot down", () => {
+    render(<MissionScreen game={{ ...base, phase: "failed" }} onRetry={() => {}} />);
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
+
   it("shows the failure state", () => {
     render(<MissionScreen game={{ ...base, phase: "failed", shield: 0 }} onRetry={() => {}} />);
     expect(screen.getByText(/mission failed/i)).toBeInTheDocument();

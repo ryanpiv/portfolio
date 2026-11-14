@@ -1,0 +1,39 @@
+@use "../../styles" as *;
+
+// Centred by LabHud; fades in, holds, fades out over CALLOUT_MS.
+
+.waveCallout {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+  text-align: center;
+  color: var(--hud-ink);
+  animation: callout 1.8s ease both;
+  pointer-events: none;
+}
+
+.waveCallout__wave {
+  @include mono-label(0.75rem, 0.3em);
+  color: var(--hud-muted);
+}
+
+.waveCallout__count {
+  @include display-title(1.4rem, 2rem);
+  letter-spacing: -0.02em;
+}
+
+@keyframes callout {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  15%,
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
