@@ -1,9 +1,17 @@
 import type { ReactNode } from "react";
 
 import { LabHud } from "@components/LabHud";
+import { LabSettingsMenu, SettingsSection } from "@components/LabSettings";
 import { PillNav } from "@components/PillGroup";
 import { StatusLegend } from "@components/StatusLegend";
-import { labLighting, type FieldViewOptions, type LabTheme, type LabVariant, type QualityId } from "@data/lab";
+import {
+  labLighting,
+  type EffectSettings,
+  type FieldViewOptions,
+  type LabTheme,
+  type LabVariant,
+  type QualityId,
+} from "@data/lab";
 import type { Project } from "@data/projects";
 import { buildLabUrl } from "@utils/labUrl";
 
@@ -17,15 +25,17 @@ type FieldHudProps = {
   onThemeChange: (theme: LabTheme) => void;
   quality: QualityId;
   onQualityChange: (quality: QualityId) => void;
+  effects: EffectSettings;
+  onEffectsChange: (patch: Partial<EffectSettings>) => void;
   view: FieldViewOptions;
   onViewChange: (patch: Partial<FieldViewOptions>) => void;
   hovered: Project | null;
   dragging: boolean;
-  /** Slot for the tuning panel (Leva). */
-  controls?: ReactNode;
+  /** Leva host; the settings menu owns its visibility. */
+  controls?: (hidden: boolean) => ReactNode;
 };
 
-/** HUD for the physics field: variant switcher, theme, view options, hover card, legend. */
+/** HUD for the physics field: title, hover card, legend; variants and every switch behind the gear. */
 export function FieldHud({
   variant,
   variants,
@@ -33,6 +43,8 @@ export function FieldHud({
   onThemeChange,
   quality,
   onQualityChange,
+  effects,
+  onEffectsChange,
   view,
   onViewChange,
   hovered,
@@ -52,20 +64,24 @@ export function FieldHud({
       title={variant.title}
       tagline={variant.tagline}
       switches={
-        <>
-          <PillNav label="Variants" items={variantLinks} />
-          <ViewSwitches
-            theme={theme}
-            onThemeChange={onThemeChange}
-            quality={quality}
-            onQualityChange={onQualityChange}
-            view={view}
-            onViewChange={onViewChange}
-            hasTethers={variant.constraint.kind === "tether"}
-          />
-        </>
+        <LabSettingsMenu
+          theme={theme}
+          onThemeChange={onThemeChange}
+          quality={quality}
+          onQualityChange={onQualityChange}
+          effects={effects}
+          onEffectsChange={onEffectsChange}
+          scope="field"
+          tuning={controls}
+        >
+          <SettingsSection title="Variant">
+            <PillNav label="Variants" items={variantLinks} />
+          </SettingsSection>
+          <SettingsSection title="View">
+            <ViewSwitches view={view} onViewChange={onViewChange} hasTethers={variant.constraint.kind === "tether"} />
+          </SettingsSection>
+        </LabSettingsMenu>
       }
-      controls={controls}
       footer={
         <>
           <HoverCard project={hovered} dragging={dragging} />

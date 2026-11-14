@@ -50,7 +50,7 @@ type ArcadeRoamProps = {
 /** Full-viewport free-roam arena for `/lab/arcade/roam`. Portals hand off to the project pages. */
 export function ArcadeRoam({ initialTheme, initialQuality }: ArcadeRoamProps) {
   const router = useRouter();
-  const { theme, setTheme, quality, setQuality, degradeQuality, capability } = useLabViewState({
+  const { theme, setTheme, quality, setQuality, degradeQuality, effects, patchEffects, capability } = useLabViewState({
     variantId: ARCADE_ROAM_ID,
     initialTheme,
     initialQuality,
@@ -99,6 +99,8 @@ export function ArcadeRoam({ initialTheme, initialQuality }: ArcadeRoamProps) {
         onThemeChange={setTheme}
         quality={quality}
         onQualityChange={setQuality}
+        effects={effects}
+        onEffectsChange={patchEffects}
         mode="roam"
         progress={progress}
         gauge={<ShieldBar shield={game.health} shieldMax={game.healthMax} label="hull" />}
@@ -106,8 +108,6 @@ export function ArcadeRoam({ initialTheme, initialQuality }: ArcadeRoamProps) {
         weapon={<WeaponReadout weapon={game.weapon} color={labLighting[theme].statusColors[weapons[game.weapon].color]} />}
         readout={[
           { label: "score", value: String(game.score) },
-          { label: "kills", value: String(game.kills) },
-          { label: "portals", value: String(game.portals) },
           { label: "explored", value: `${explored} / ${projects.length}` },
         ]}
         hint={HINT[capability?.touchOnly ? "touch" : "keys"]}

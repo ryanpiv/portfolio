@@ -1,6 +1,7 @@
 import type { ProgressStatKey } from "@data/lab";
 
 import { createStore, type Store } from "./createStore";
+import { hydrateStore } from "./persistedStore";
 import { addStat, emptyProgress, exploreProject, parseProgress, type ProgressState } from "./progress";
 import { safeStorage, type StorageLike } from "./storage";
 
@@ -23,20 +24,7 @@ export function createProgressStore(): ProgressStore {
 
 /** Loads saved progress into the store and starts mirroring changes back. Returns an unsubscribe. */
 export function hydrateProgress(store: ProgressStore, storage: StorageLike | null = safeStorage()): () => void {
-  if (!storage) return () => {};
-  try {
-    const raw = storage.getItem(PROGRESS_STORAGE_KEY) ?? storage.getItem(LEGACY_STORAGE_KEY);
-    if (raw) store.set(parseProgress(JSON.parse(raw)));
-  } catch {
-    // Unreadable save: start fresh rather than crash the lab.
-  }
-  return store.subscribe(() => {
-    try {
-      storage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(store.get()));
-    } catch {
-      // Quota or disabled storage: progress lives in memory for this visit.
-    }
-  });
+  return hydrateStore(store, { key: PROGRESS_STORAGE_KEY, legacyKeys: [LEGACY_STORAGE_KEY], parse: parseProgress, storage });
 }
 
 export function recordStat(

@@ -5,37 +5,33 @@ import { useCallback, useState } from "react";
 
 import {
   defaultViewOptions,
-  isQualityId,
   stepQualityDown,
+  type EffectSettings,
   type FieldViewOptions,
   type LabTheme,
   type QualityId,
 } from "@data/lab";
 import { useDeviceCapability } from "@hooks/useDeviceCapability";
-import { usePersistedChoice } from "@hooks/usePersistedChoice";
+import { useLabSettings } from "@hooks/useLabSettings";
 import { useSystemTheme } from "@hooks/useSystemTheme";
 import { optimisticCapability, suggestQuality } from "@utils/deviceCapability";
 import { buildLabUrl, type LabQuery } from "@utils/labUrl";
 
 type UseLabViewStateArgs = {
   variantId: string;
-  /** From `?theme=`; when absent the system preference decides. */
+  /** From `?theme=`; when absent the remembered pick, then the system preference, decides. */
   initialTheme?: LabTheme;
-  /** From `?quality=`; when absent the device decides. */
+  /** From `?quality=`; when absent the remembered pick, then the device, decides. */
   initialQuality?: QualityId;
   /** From `?names=` / `?lines=`. */
   initialView?: FieldViewOptions;
 };
 
-/** localStorage key for the last quality tier picked (or auto-degraded to). */
-export const QUALITY_STORAGE_KEY = "lab.quality";
-
 /**
- * Visitor-facing lab state (theme, render quality, view options). Every
- * change is mirrored into the URL with `router.replace` so it survives
- * variant switches and can be shared as a link. Quality precedence: the
- * URL, then the tier remembered from a previous visit, then the device
- * probe's suggestion. Picks (manual or auto step-down) are remembered.
+ * Visitor-facing lab state: theme, render quality, effect toggles, view
+ * options. Theme and quality precedence is URL → remembered setting →
+ * system / device suggestion; picks are remembered in the settings store
+ * and mirrored into the URL with `router.replace` so links can be shared.
  */
 export function useLabViewState({
   variantId,
@@ -46,14 +42,15 @@ export function useLabViewState({
   const router = useRouter();
   const systemTheme = useSystemTheme();
   const capability = useDeviceCapability();
-  const [remembered, rememberQuality] = usePersistedChoice(QUALITY_STORAGE_KEY, undefined, isQualityId);
-  const [overrides, setOverrides] = useState<{ theme?: LabTheme; quality?: QualityId }>({
+  const { settings, patch, patchEffects } = useLabSettings();
+  const [fromUrl, setFromUrl] = useState<{ theme?: LabTheme; quality?: QualityId }>({
     theme: initialTheme,
     quality: initialQuality,
   });
   const [view, setView] = useState<FieldViewOptions>(initialView);
-  const theme = overrides.theme ?? systemTheme;
-  const quality = overrides.quality ?? remembered ?? suggestQuality(capability ?? optimisticCapability);
+
+  const theme = fromUrl.theme ?? settings.theme ?? systemTheme;
+  const quality = fromUrl.quality ?? settings.quality ?? suggestQuality(capability ?? optimisticCapability);
 
   const syncUrl = useCallback(
     (next: LabQuery) => {
@@ -64,34 +61,37 @@ export function useLabViewState({
 
   const setTheme = useCallback(
     (next: LabTheme) => {
-      const nextOverrides = { ...overrides, theme: next };
-      setOverrides(nextOverrides);
-      syncUrl({ ...nextOverrides, view });
+      const picks = { ...fromUrl, theme: next };
+      setFromUrl(picks);
+      patch({ theme: next });
+      syncUrl({ ...picks, view });
     },
-    [syncUrl, view, overrides],
+    [syncUrl, view, fromUrl, patch],
   );
 
   const setQuality = useCallback(
     (next: QualityId) => {
-      const nextOverrides = { ...overrides, quality: next };
-      setOverrides(nextOverrides);
-      rememberQuality(next);
-      syncUrl({ ...nextOverrides, view });
+      const picks = { ...fromUrl, quality: next };
+      setFromUrl(picks);
+      patch({ quality: next });
+      syncUrl({ ...picks, view });
     },
-    [syncUrl, view, overrides, rememberQuality],
+    [syncUrl, view, fromUrl, patch],
   );
 
-  /** For the frame-rate monitor: one tier cheaper, and remembered like a manual pick. */
+  /** For the frame-rate monitor: one tier cheaper, remembered like a manual pick. */
   const degradeQuality = useCallback(() => setQuality(stepQualityDown(quality)), [quality, setQuality]);
 
   const patchView = useCallback(
-    (patch: Partial<FieldViewOptions>) => {
-      const next = { ...view, ...patch };
-      setView(next);
-      syncUrl({ ...overrides, view: next });
+    (next: Partial<FieldViewOptions>) => {
+      const merged = { ...view, ...next };
+      setView(merged);
+      syncUrl({ ...fromUrl, view: merged });
     },
-    [syncUrl, view, overrides],
+    [syncUrl, view, fromUrl],
   );
 
-  return { theme, setTheme, quality, setQuality, degradeQuality, view, patchView, capability };
+  const effects: EffectSettings = settings.effects;
+
+  return { theme, setTheme, quality, setQuality, degradeQuality, effects, patchEffects, view, patchView, capability };
 }

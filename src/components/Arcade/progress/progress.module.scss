@@ -1,6 +1,6 @@
 @use "../../../styles" as *;
 
-// Achievement toast (under the vitals bar) and the bottom-right achievements panel.
+// Achievement toast (under the vitals bar) and the achievements list in the settings menu.
 
 .toast {
   position: absolute;
@@ -53,99 +53,71 @@
   }
 }
 
-.panel {
-  position: relative;
-}
+// Achievements list inside the settings menu.
 
-.panel__toggle {
+.list {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: $space-3;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  pointer-events: auto;
-
-  &:focus-visible {
-    @include focus-ring;
-  }
 }
 
-.panel__label {
-  @include mono-label(0.625rem, 0.14em);
+.list__count {
+  @include mono-label(0.6875rem, 0.08em);
+  margin: 0;
   color: var(--hud-muted);
-}
-
-.panel__count {
-  @include mono-label(1.1rem, 0.04em);
   font-variant-numeric: tabular-nums;
 }
 
-.panel__list {
+.list__items {
   @include list-reset;
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + #{$space-3});
   display: grid;
   gap: $space-3;
-  width: 18rem;
-  max-height: 50vh;
-  padding: $space-3 $space-4;
-  overflow: auto;
-  text-align: left;
-  border: 1px solid var(--hud-border);
-  border-radius: $radius-md;
-  background: var(--hud-surface);
-  backdrop-filter: blur(8px);
-  pointer-events: auto;
 }
 
-.panel__item {
+.list__item {
   opacity: 0.7;
 }
 
-.panel__item--done {
+.list__item--done {
   opacity: 1;
 }
 
-.panel__row {
+.list__row {
   display: flex;
   justify-content: space-between;
   gap: $space-3;
 }
 
-.panel__title {
+.list__title {
   @include mono-label(0.75rem, 0.04em);
   text-transform: none;
 }
 
-.panel__status {
+.list__status {
   @include mono-label(0.6875rem, 0.04em);
   color: var(--hud-muted);
   font-variant-numeric: tabular-nums;
 
-  .panel__item--done & {
+  .list__item--done & {
     color: $color-live;
   }
 }
 
-.panel__description {
+.list__description {
   @include mono-label(0.625rem, 0.02em);
   margin: 2px 0 $space-1;
   text-transform: none;
   color: var(--hud-muted);
 }
 
-.panel__track {
+.list__track {
   height: 3px;
   border-radius: 999px;
   background: var(--hud-border);
   overflow: hidden;
 }
 
-.panel__fill {
+.list__fill {
   height: 100%;
   background: $color-live;
 }

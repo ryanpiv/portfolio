@@ -1,12 +1,7 @@
-import { QualitySwitch, ThemeSwitch } from "@components/LabSwitches";
 import { PillGroup, type PillOption } from "@components/PillGroup";
-import type { FieldViewOptions, LabTheme, NameplateMode, QualityId } from "@data/lab";
+import type { FieldViewOptions, NameplateMode } from "@data/lab";
 
 type ViewSwitchesProps = {
-  theme: LabTheme;
-  onThemeChange: (theme: LabTheme) => void;
-  quality: QualityId;
-  onQualityChange: (quality: QualityId) => void;
   view: FieldViewOptions;
   onViewChange: (patch: Partial<FieldViewOptions>) => void;
   /** Whether the active variant draws tether lines at all. */
@@ -24,20 +19,10 @@ const LINE_OPTIONS: PillOption<"on" | "off">[] = [
   { value: "off", label: "Off" },
 ];
 
-/** Visitor-facing toggles: theme, quality, nameplates, tether lines. */
-export function ViewSwitches({
-  theme,
-  onThemeChange,
-  quality,
-  onQualityChange,
-  view,
-  onViewChange,
-  hasTethers,
-}: ViewSwitchesProps) {
+/** Field-only view toggles: nameplates and tether lines. */
+export function ViewSwitches({ view, onViewChange, hasTethers }: ViewSwitchesProps) {
   return (
     <>
-      <ThemeSwitch value={theme} onChange={onThemeChange} />
-      <QualitySwitch value={quality} onChange={onQualityChange} />
       <PillGroup
         label="Names"
         options={NAMEPLATE_OPTIONS}

@@ -44,7 +44,7 @@ type ArcadeProps = {
 
 /** Full-viewport rail shooter for `/lab/arcade`. Owns input, theme, and the game store; the scene is client-only. */
 export function ArcadeRail({ initialTheme, initialQuality }: ArcadeProps) {
-  const { theme, setTheme, quality, setQuality, degradeQuality, capability } = useLabViewState({
+  const { theme, setTheme, quality, setQuality, degradeQuality, effects, patchEffects, capability } = useLabViewState({
     variantId: ARCADE_RAIL_ID,
     initialTheme,
     initialQuality,
@@ -83,14 +83,13 @@ export function ArcadeRail({ initialTheme, initialQuality }: ArcadeProps) {
         onThemeChange={setTheme}
         quality={quality}
         onQualityChange={setQuality}
+        effects={effects}
+        onEffectsChange={patchEffects}
         mode="rail"
         progress={progress}
         gauge={<ShieldBar shield={game.shield} shieldMax={game.shieldMax} />}
         tracker={<WaveTracker game={game} />}
-        readout={[
-          { label: "hits", value: `${game.hits} / ${game.total}` },
-          { label: "escaped", value: String(game.escaped) },
-        ]}
+        readout={[{ label: "hits", value: `${game.hits} / ${game.total}` }]}
         hint={`${STEER_HINT[scheme]} · ${PHASE_HINT[game.phase][scheme]}`}
         center={
           <>

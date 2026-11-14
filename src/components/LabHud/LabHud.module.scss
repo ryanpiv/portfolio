@@ -71,15 +71,6 @@
   pointer-events: auto;
 }
 
-// Flows under the switches so it never overlaps them, whatever their count.
-.labHud__controls {
-  width: 18rem;
-  max-height: 50vh;
-  margin-top: $space-2;
-  overflow: auto;
-  border-radius: $radius-md;
-}
-
 .labHud__card {
   max-width: 22rem;
   min-height: 3rem;

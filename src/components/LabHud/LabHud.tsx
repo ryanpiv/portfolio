@@ -10,10 +10,8 @@ type LabHudProps = {
   eyebrow: string;
   title: string;
   tagline?: string;
-  /** Top-right stack: variant nav, theme/view toggles. */
+  /** Top right: the settings menu. */
   switches?: ReactNode;
-  /** Panel rendered under the switches (Leva). */
-  controls?: ReactNode;
   /** Centred between header and footer (modal-ish screens). */
   center?: ReactNode;
   /** Bottom row, laid out space-between. */
@@ -22,10 +20,10 @@ type LabHudProps = {
 
 /**
  * Overlay chrome shared by every /lab experience. Pointer events pass
- * through to the canvas except on the switches, controls, and anything a
+ * through to the canvas except on the switches and anything a
  * child opts back in. Children read the `--hud-*` custom properties.
  */
-export function LabHud({ theme, eyebrow, title, tagline, switches, controls, center, footer }: LabHudProps) {
+export function LabHud({ theme, eyebrow, title, tagline, switches, center, footer }: LabHudProps) {
   return (
     <div className={cx(styles.labHud, styles[`labHud--${theme}`])} data-theme={theme}>
       {center && <div className={styles.labHud__center}>{center}</div>}
@@ -35,12 +33,7 @@ export function LabHud({ theme, eyebrow, title, tagline, switches, controls, cen
           <h1 className={styles.labHud__title}>{title}</h1>
           {tagline && <p className={styles.labHud__tagline}>{tagline}</p>}
         </div>
-        {(switches || controls) && (
-          <div className={styles.labHud__switches}>
-            {switches}
-            {controls && <div className={styles.labHud__controls}>{controls}</div>}
-          </div>
-        )}
+        {switches && <div className={styles.labHud__switches}>{switches}</div>}
       </header>
 
       {footer && <footer className={styles.labHud__bottom}>{footer}</footer>}

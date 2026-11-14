@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
 import { FieldHud } from "@components/FieldHud";
-import { defaultViewOptions, labVariants } from "@data/lab";
+import { defaultEffects, defaultViewOptions, labVariants } from "@data/lab";
 import type { Project } from "@data/projects";
 
 const project: Project = {
@@ -25,6 +25,8 @@ function renderHud(overrides: Partial<ComponentProps<typeof FieldHud>> = {}) {
     onThemeChange: jest.fn(),
     quality: "high",
     onQualityChange: jest.fn(),
+    effects: defaultEffects,
+    onEffectsChange: jest.fn(),
     view: defaultViewOptions,
     onViewChange: jest.fn(),
     hovered: null,
@@ -35,10 +37,14 @@ function renderHud(overrides: Partial<ComponentProps<typeof FieldHud>> = {}) {
   return props;
 }
 
+const openSettings = () => fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+
 describe("FieldHud", () => {
-  it("shows the variant, links to the others, and the idle hint", () => {
+  it("shows the variant, links to the others from the menu, and the idle hint", () => {
     renderHud();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Caged");
+    expect(screen.queryByRole("link", { name: "Tethered" })).not.toBeInTheDocument();
+    openSettings();
     expect(screen.getByRole("link", { name: "Tethered" })).toHaveAttribute(
       "href",
       "/lab/tethered?theme=dark&quality=high",
@@ -48,6 +54,7 @@ describe("FieldHud", () => {
 
   it("carries non-default view options into variant links", () => {
     renderHud({ view: { nameplates: "hover", tetherLines: false } });
+    openSettings();
     expect(screen.getByRole("link", { name: "Attractor" })).toHaveAttribute(
       "href",
       "/lab/attractor?theme=dark&quality=high&names=hover&lines=off",
@@ -63,6 +70,7 @@ describe("FieldHud", () => {
 
   it("calls onThemeChange with the clicked theme", () => {
     const { onThemeChange } = renderHud();
+    openSettings();
     fireEvent.click(screen.getByRole("button", { name: "light" }));
     expect(onThemeChange).toHaveBeenCalledWith("light");
     expect(screen.getByRole("button", { name: "dark" })).toHaveAttribute(
@@ -73,6 +81,7 @@ describe("FieldHud", () => {
 
   it("changes the nameplate mode", () => {
     const { onViewChange } = renderHud();
+    openSettings();
     const names = screen.getByRole("group", { name: "Names" });
     expect(names).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Hover" }));
@@ -83,11 +92,13 @@ describe("FieldHud", () => {
 
   it("only offers the tether-lines toggle on the tethered variant", () => {
     renderHud();
+    openSettings();
     expect(screen.queryByRole("group", { name: "Lines" })).not.toBeInTheDocument();
   });
 
   it("toggles tether lines on the tethered variant", () => {
     const { onViewChange } = renderHud({ variant: tethered });
+    openSettings();
     const lines = screen.getByRole("group", { name: "Lines" });
     fireEvent.click(within(lines).getByRole("button", { name: "Off" }));
     expect(onViewChange).toHaveBeenCalledWith({ tetherLines: false });

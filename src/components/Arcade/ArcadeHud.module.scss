@@ -1,13 +1,11 @@
 @use "../../styles" as *;
 
-// Shooter-style HUD over the game canvas. Three zones top (identity /
-// vitals / switches), three zones bottom (tracker / hint / stats), callouts
-// absolutely centred, brackets in the corners. Everything is pointer-events
-// none except the switches so steering drags reach the scene.
+// Minimal game HUD over the canvas. Top: mode word / vitals / gear.
+// Bottom: tracker / hint / numbers. Callouts absolutely centred. No
+// surfaces, no frames: type and thin lines on the scene. Everything is
+// pointer-events none except the settings menu so steering drags reach it.
 
-$bracket: 22px;
-$bracket-inset: 0.5rem;
-$hint-hold: 9s;
+$hint-hold: 7s;
 
 .hud {
   @include hud-vars(dark);
@@ -29,50 +27,6 @@ $hint-hold: 9s;
   --hud-accent: #2a6fa8;
 }
 
-// ---------------------------------------------------------------------------
-// Frame
-// ---------------------------------------------------------------------------
-
-.hud__bracket {
-  position: absolute;
-  width: $bracket;
-  height: $bracket;
-  border: 1px solid var(--hud-border);
-  opacity: 0.9;
-}
-
-.hud__bracket--tl {
-  top: calc(#{$header-height} + #{$bracket-inset});
-  left: $bracket-inset;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.hud__bracket--tr {
-  top: calc(#{$header-height} + #{$bracket-inset});
-  right: $bracket-inset;
-  border-left: 0;
-  border-bottom: 0;
-}
-
-.hud__bracket--bl {
-  bottom: $bracket-inset;
-  left: $bracket-inset;
-  border-right: 0;
-  border-top: 0;
-}
-
-.hud__bracket--br {
-  bottom: $bracket-inset;
-  right: $bracket-inset;
-  border-left: 0;
-  border-top: 0;
-}
-
-// ---------------------------------------------------------------------------
-// Top row
-// ---------------------------------------------------------------------------
-
 .hud__top,
 .hud__bottom {
   display: grid;
@@ -85,76 +39,22 @@ $hint-hold: 9s;
   align-items: end;
 }
 
-.hud__ident {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: $space-2;
-}
-
-.hud__eyebrow {
-  @include mono-label(0.625rem, 0.18em);
+.hud__mode {
+  @include mono-label(0.6875rem, 0.18em);
   margin: 0;
+  padding-top: 0.6rem;
   color: var(--hud-muted);
-}
-
-.hud__title {
-  @include mono-label(0.8125rem, 0.12em);
-  margin: 0;
-  font-weight: 500;
-  color: var(--hud-ink);
 }
 
 .hud__gauge {
-  width: min(34rem, 42vw);
+  width: min(30rem, 38vw);
   padding-top: $space-1;
 }
 
-.hud__switches {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: $space-2;
-  pointer-events: auto;
+// The gear sits in the right column, flush right.
+.hud__top > :last-child {
+  justify-self: end;
 }
-
-.hud__tuningToggle {
-  @include mono-label(0.625rem, 0.14em);
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--hud-border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--hud-muted);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--hud-ink);
-  }
-
-  &:focus-visible {
-    @include focus-ring;
-  }
-}
-
-.hud__tuningToggle--on {
-  color: var(--hud-ink);
-  border-color: var(--hud-accent);
-}
-
-.hud__controls {
-  width: 18rem;
-  max-height: 50vh;
-  overflow: auto;
-  border-radius: $radius-md;
-}
-
-.hud__controls--hidden {
-  display: none;
-}
-
-// ---------------------------------------------------------------------------
-// Centre
-// ---------------------------------------------------------------------------
 
 .hud__center {
   position: absolute;
@@ -165,30 +65,26 @@ $hint-hold: 9s;
   pointer-events: none;
 }
 
-// ---------------------------------------------------------------------------
-// Bottom row
-// ---------------------------------------------------------------------------
-
 .hud__tracker {
   display: flex;
   align-items: flex-end;
   min-height: 1px;
 }
 
-// Shown long enough to read, then steps back so the scene owns the frame.
+// Readable for a few seconds, then gone: the scene owns the frame.
 .hud__hint {
-  @include mono-label(0.6875rem, 0.06em);
-  max-width: 34rem;
+  @include mono-label(0.6875rem, 0.04em);
+  max-width: 30rem;
   margin: 0;
   text-align: center;
   text-transform: none;
   color: var(--hud-muted);
-  animation: hint-settle 800ms ease $hint-hold both;
+  animation: hint-out 900ms ease $hint-hold both;
 }
 
-@keyframes hint-settle {
+@keyframes hint-out {
   to {
-    opacity: 0.35;
+    opacity: 0;
   }
 }
 
@@ -196,14 +92,8 @@ $hint-hold: 9s;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: $space-3;
+  gap: $space-2;
   text-align: right;
-}
-
-.hud__weapon {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
 }
 
 .readout {
@@ -226,17 +116,13 @@ $hint-hold: 9s;
 }
 
 .readout__value {
-  @include mono-label(1.25rem, 0.02em);
+  @include mono-label(1.375rem, 0.02em);
   margin: 0;
   line-height: 1;
   white-space: nowrap;
   color: var(--hud-ink);
   font-variant-numeric: tabular-nums;
 }
-
-// ---------------------------------------------------------------------------
-// Small screens: keep the vitals and counters, lose the decoration.
-// ---------------------------------------------------------------------------
 
 @media (max-width: #{$bp-md - 1px}) {
   .hud {
@@ -254,14 +140,8 @@ $hint-hold: 9s;
     width: 100%;
   }
 
-  .hud__hint,
-  .hud__bracket,
-  .hud__eyebrow {
+  .hud__hint {
     display: none;
-  }
-
-  .readout {
-    gap: $space-4;
   }
 
   .readout__value {

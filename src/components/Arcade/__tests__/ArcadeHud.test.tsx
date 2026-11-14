@@ -1,16 +1,20 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 
+import { defaultEffects } from "@data/lab";
 import { createProgressStore } from "@utils/progressStore";
 
 import { ArcadeHud } from "../ArcadeHud";
 
 function renderHud(mode: "rail" | "roam" = "rail") {
+  const onEffectsChange = jest.fn();
   render(
     <ArcadeHud
       theme="dark"
       onThemeChange={() => {}}
       quality="high"
       onQualityChange={() => {}}
+      effects={defaultEffects}
+      onEffectsChange={onEffectsChange}
       mode={mode}
       progress={createProgressStore()}
       readout={[
@@ -25,7 +29,10 @@ function renderHud(mode: "rail" | "roam" = "rail") {
       controls={(hidden) => <p>{hidden ? "tuning hidden" : "tuning slot"}</p>}
     />,
   );
+  return { onEffectsChange };
 }
+
+const openSettings = () => fireEvent.click(screen.getByRole("button", { name: "Settings" }));
 
 describe("ArcadeHud", () => {
   it("renders the readout, gauge, hint, and center slots", () => {
@@ -39,8 +46,17 @@ describe("ArcadeHud", () => {
     expect(screen.getByText("steer with WASD")).toBeInTheDocument();
   });
 
-  it("links to the other game mode, carrying the theme", () => {
+  it("keeps everything but the gear out of the way until opened", () => {
+    renderHud();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "free roam" })).not.toBeInTheDocument();
+    openSettings();
+    expect(screen.getByRole("dialog", { name: "Settings" })).toBeInTheDocument();
+  });
+
+  it("links to the other game mode from the menu, carrying the theme", () => {
     renderHud("rail");
+    openSettings();
     const nav = screen.getByRole("navigation", { name: /mode/i });
     const rail = screen.getByRole("link", { name: "rail" });
     const roam = screen.getByRole("link", { name: "free roam" });
@@ -50,16 +66,20 @@ describe("ArcadeHud", () => {
     expect(roam).toHaveAttribute("href", "/lab/arcade/roam?theme=dark&quality=high");
   });
 
-  it("includes the achievements panel", () => {
-    renderHud("roam");
-    expect(screen.getByRole("button", { name: /achievements/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "free roam" })).toHaveAttribute("aria-current", "page");
+  it("lists achievements and toggles effects inside the menu", () => {
+    const { onEffectsChange } = renderHud("roam");
+    openSettings();
+    expect(screen.getByText(/0 \/ \d+ unlocked/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("switch", { name: /bloom/i }));
+    expect(onEffectsChange).toHaveBeenCalledWith({ bloom: false });
+    expect(screen.getByRole("group", { name: "Foliage" })).toBeInTheDocument();
   });
 
   it("keeps the tuning panel hidden until toggled", () => {
     renderHud();
     expect(screen.getByText("tuning hidden")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "tuning" }));
+    openSettings();
+    fireEvent.click(screen.getByRole("switch", { name: /tuning/i }));
     expect(screen.getByText("tuning slot")).toBeInTheDocument();
   });
 });

@@ -37,7 +37,8 @@ function cursorFor(dragging: string | null, hovered: string | null): string {
  */
 export function PhysicsField({ projects, variant, initialTheme, initialQuality, initialView }: PhysicsFieldProps) {
   const router = useRouter();
-  const { theme, setTheme, quality, setQuality, degradeQuality, view, patchView, capability } = useLabViewState({
+  const { theme, setTheme, quality, setQuality, degradeQuality, effects, patchEffects, view, patchView, capability } =
+    useLabViewState({
     variantId: variant.id,
     initialTheme,
     initialQuality,
@@ -81,11 +82,13 @@ export function PhysicsField({ projects, variant, initialTheme, initialQuality, 
         onThemeChange={setTheme}
         quality={quality}
         onQualityChange={setQuality}
+        effects={effects}
+        onEffectsChange={patchEffects}
         view={view}
         onViewChange={patchView}
         hovered={hoveredProject}
         dragging={dragging !== null}
-        controls={<TuningPanel />}
+        controls={(hidden) => <TuningPanel hidden={hidden} />}
       />
     </LabStage>
   );

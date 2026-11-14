@@ -1,9 +1,9 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { achievements } from "@data/lab";
 import { createProgressStore, recordStat } from "@utils/progressStore";
 
-import { AchievementsPanel } from "../progress/AchievementsPanel";
+import { AchievementsList } from "../progress/AchievementsList";
 import { AchievementToast, TOAST_MS } from "../progress/AchievementToast";
 
 describe("AchievementToast", () => {
@@ -30,16 +30,13 @@ describe("AchievementToast", () => {
   });
 });
 
-describe("AchievementsPanel", () => {
-  it("shows the count and expands to the full list with progress", () => {
+describe("AchievementsList", () => {
+  it("shows the count and every milestone with progress", () => {
     const store = createProgressStore();
     recordStat(store, "enemiesDestroyed", 5);
-    render(<AchievementsPanel store={store} />);
+    render(<AchievementsList store={store} />);
 
-    const toggle = screen.getByRole("button", { name: /achievements 1 \/ \d+/i });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    fireEvent.click(toggle);
-
+    expect(screen.getByText(/1 \/ \d+ unlocked/)).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(achievements.length);
     expect(screen.getByText("First Blood").parentElement).toHaveTextContent("✓");
     expect(screen.getByText("Ace").parentElement).toHaveTextContent("50%");
