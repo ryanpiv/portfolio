@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { LabHudCard } from "@components/LabHud";
 import { achievements } from "@data/lab";
 import { useStore } from "@hooks/useStore";
 import { cx } from "@utils/cx";
@@ -11,13 +10,13 @@ import type { ProgressStore } from "@utils/progressStore";
 
 import styles from "./progress.module.scss";
 
-/** Footer card: unlock count as a toggle, the full list when open. Shared by every mode. */
+/** Bottom-right unlock count as a toggle; the full list opens upward over the scene. Shared by every mode. */
 export function AchievementsPanel({ store }: { store: ProgressStore }) {
   const { stats, unlocked } = useStore(store);
   const [open, setOpen] = useState(false);
 
   return (
-    <LabHudCard>
+    <div className={styles.panel}>
       <button
         type="button"
         className={styles.panel__toggle}
@@ -51,6 +50,6 @@ export function AchievementsPanel({ store }: { store: ProgressStore }) {
           })}
         </ul>
       )}
-    </LabHudCard>
+    </div>
   );
 }

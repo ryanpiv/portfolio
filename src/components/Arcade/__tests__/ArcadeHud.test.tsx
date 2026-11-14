@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { createProgressStore } from "@utils/progressStore";
 
@@ -17,7 +17,10 @@ function renderHud(mode: "rail" | "roam" = "rail") {
       ]}
       hint="steer with WASD"
       gauge={<p>gauge slot</p>}
+      tracker={<p>tracker slot</p>}
+      weapon={<p>weapon slot</p>}
       center={<p>center slot</p>}
+      controls={(hidden) => <p>{hidden ? "tuning hidden" : "tuning slot"}</p>}
     />,
   );
 }
@@ -28,6 +31,8 @@ describe("ArcadeHud", () => {
     expect(screen.getByText("wave").nextElementSibling).toHaveTextContent("1 / 4");
     expect(screen.getByText("hits").nextElementSibling).toHaveTextContent("0 / 16");
     expect(screen.getByText("gauge slot")).toBeInTheDocument();
+    expect(screen.getByText("tracker slot")).toBeInTheDocument();
+    expect(screen.getByText("weapon slot")).toBeInTheDocument();
     expect(screen.getByText("center slot")).toBeInTheDocument();
     expect(screen.getByText("steer with WASD")).toBeInTheDocument();
   });
@@ -47,5 +52,12 @@ describe("ArcadeHud", () => {
     renderHud("roam");
     expect(screen.getByRole("button", { name: /achievements/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "free roam" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("keeps the tuning panel hidden until toggled", () => {
+    renderHud();
+    expect(screen.getByText("tuning hidden")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "tuning" }));
+    expect(screen.getByText("tuning slot")).toBeInTheDocument();
   });
 });

@@ -12,13 +12,14 @@ describe("ShieldBar", () => {
 
   it("changes tone as the shield drops", () => {
     const { rerender } = render(<ShieldBar shield={100} shieldMax={100} />);
-    const fill = () => screen.getByRole("meter").firstElementChild as HTMLElement;
-    expect(fill().className).not.toMatch(/warn|critical/);
+    const bar = () => screen.getByRole("meter").parentElement as HTMLElement;
+    expect(bar().className).not.toMatch(/warn|critical/);
 
     rerender(<ShieldBar shield={50} shieldMax={100} />);
-    expect(fill().className).toMatch(/warn/);
+    expect(bar().className).toMatch(/warn/);
 
     rerender(<ShieldBar shield={20} shieldMax={100} />);
-    expect(fill().className).toMatch(/critical/);
+    expect(bar().className).toMatch(/critical/);
+    expect(screen.getByText("20")).toBeInTheDocument();
   });
 });

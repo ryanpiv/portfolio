@@ -1,0 +1,25 @@
+@use "../../../styles" as *;
+
+.weapon {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.weapon__label {
+  @include mono-label(0.5625rem, 0.18em);
+  color: var(--hud-muted);
+}
+
+.weapon__name {
+  @include mono-label(1rem, 0.08em);
+  color: var(--weapon-color, var(--hud-ink));
+  text-shadow: 0 0 10px var(--weapon-color, transparent);
+}
+
+.weapon__spec {
+  @include mono-label(0.625rem, 0.04em);
+  text-transform: none;
+  color: var(--hud-muted);
+}

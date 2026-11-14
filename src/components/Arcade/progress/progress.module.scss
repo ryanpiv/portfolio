@@ -1,10 +1,10 @@
 @use "../../../styles" as *;
 
-// Achievement toast (top centre) and the footer achievements panel.
+// Achievement toast (under the vitals bar) and the bottom-right achievements panel.
 
 .toast {
   position: absolute;
-  top: calc(#{$header-height} + #{$space-5});
+  top: calc(#{$header-height} + #{$space-8} + #{$space-4});
   left: 50%;
   min-width: 16rem;
   padding: $space-3 $space-4;
@@ -53,6 +53,10 @@
   }
 }
 
+.panel {
+  position: relative;
+}
+
 .panel__toggle {
   display: flex;
   align-items: baseline;
@@ -81,12 +85,20 @@
 
 .panel__list {
   @include list-reset;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + #{$space-3});
   display: grid;
   gap: $space-3;
   width: 18rem;
-  max-height: 40vh;
-  margin-top: $space-3;
+  max-height: 50vh;
+  padding: $space-3 $space-4;
   overflow: auto;
+  text-align: left;
+  border: 1px solid var(--hud-border);
+  border-radius: $radius-md;
+  background: var(--hud-surface);
+  backdrop-filter: blur(8px);
   pointer-events: auto;
 }
 

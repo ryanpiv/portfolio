@@ -14,6 +14,7 @@ import { useProgress } from "./progress";
 import { createGameStore, initialGameState, type GamePhase, type GameRules } from "./rail/gameStore";
 import { MissionScreen } from "./rail/MissionScreen";
 import { WaveCallout } from "./rail/WaveCallout";
+import { WaveTracker } from "./rail/WaveTracker";
 import { ShieldBar } from "./ShieldBar";
 import styles from "./Arcade.module.scss";
 import { ArcadeHud } from "./ArcadeHud";
@@ -60,12 +61,12 @@ export function ArcadeRail({ initialTheme }: ArcadeProps) {
         onThemeChange={setTheme}
         mode="rail"
         progress={progress}
+        gauge={<ShieldBar shield={game.shield} shieldMax={game.shieldMax} />}
+        tracker={<WaveTracker game={game} />}
         readout={[
-          { label: "wave", value: `${Math.min(game.wave + 1, game.waveCount)} / ${game.waveCount}` },
           { label: "hits", value: `${game.hits} / ${game.total}` },
           { label: "escaped", value: String(game.escaped) },
         ]}
-        gauge={<ShieldBar shield={game.shield} shieldMax={game.shieldMax} />}
         hint={`WASD / arrows to steer · ${PHASE_HINT[game.phase]}`}
         center={
           <>
@@ -73,7 +74,7 @@ export function ArcadeRail({ initialTheme }: ArcadeProps) {
             <MissionScreen game={game} onRetry={retry} />
           </>
         }
-        controls={<TuningPanel />}
+        controls={(hidden) => <TuningPanel hidden={hidden} />}
       />
     </div>
   );

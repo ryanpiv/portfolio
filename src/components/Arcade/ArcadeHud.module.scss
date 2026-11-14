@@ -1,28 +1,277 @@
 @use "../../styles" as *;
 
-// Mission readout: a row of mono label / value pairs inside a LabHudCard.
-// Shared by both game modes; each mode supplies its own entries.
+// Shooter-style HUD over the game canvas. Three zones top (identity /
+// vitals / switches), three zones bottom (tracker / hint / stats), callouts
+// absolutely centred, brackets in the corners. Everything is pointer-events
+// none except the switches so steering drags reach the scene.
+
+$bracket: 22px;
+$bracket-inset: 0.5rem;
+$hint-hold: 9s;
+
+.hud {
+  @include hud-vars(dark);
+  --hud-accent: #{$color-showcase};
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(#{$header-height} + #{$space-4}) $space-6 $space-6;
+  color: var(--hud-ink);
+  pointer-events: none;
+}
+
+.hud--light {
+  @include hud-vars(light);
+  --hud-accent: #2a6fa8;
+}
+
+// ---------------------------------------------------------------------------
+// Frame
+// ---------------------------------------------------------------------------
+
+.hud__bracket {
+  position: absolute;
+  width: $bracket;
+  height: $bracket;
+  border: 1px solid var(--hud-border);
+  opacity: 0.9;
+}
+
+.hud__bracket--tl {
+  top: calc(#{$header-height} + #{$bracket-inset});
+  left: $bracket-inset;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.hud__bracket--tr {
+  top: calc(#{$header-height} + #{$bracket-inset});
+  right: $bracket-inset;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.hud__bracket--bl {
+  bottom: $bracket-inset;
+  left: $bracket-inset;
+  border-right: 0;
+  border-top: 0;
+}
+
+.hud__bracket--br {
+  bottom: $bracket-inset;
+  right: $bracket-inset;
+  border-left: 0;
+  border-top: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Top row
+// ---------------------------------------------------------------------------
+
+.hud__top,
+.hud__bottom {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: $space-4;
+  align-items: start;
+}
+
+.hud__bottom {
+  align-items: end;
+}
+
+.hud__ident {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $space-2;
+}
+
+.hud__eyebrow {
+  @include mono-label(0.625rem, 0.18em);
+  margin: 0;
+  color: var(--hud-muted);
+}
+
+.hud__title {
+  @include mono-label(0.8125rem, 0.12em);
+  margin: 0;
+  font-weight: 500;
+  color: var(--hud-ink);
+}
+
+.hud__gauge {
+  width: min(34rem, 42vw);
+  padding-top: $space-1;
+}
+
+.hud__switches {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-2;
+  pointer-events: auto;
+}
+
+.hud__tuningToggle {
+  @include mono-label(0.625rem, 0.14em);
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hud-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--hud-ink);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.hud__tuningToggle--on {
+  color: var(--hud-ink);
+  border-color: var(--hud-accent);
+}
+
+.hud__controls {
+  width: 18rem;
+  max-height: 50vh;
+  overflow: auto;
+  border-radius: $radius-md;
+}
+
+.hud__controls--hidden {
+  display: none;
+}
+
+// ---------------------------------------------------------------------------
+// Centre
+// ---------------------------------------------------------------------------
+
+.hud__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: $space-5;
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------------------
+// Bottom row
+// ---------------------------------------------------------------------------
+
+.hud__tracker {
+  display: flex;
+  align-items: flex-end;
+  min-height: 1px;
+}
+
+// Shown long enough to read, then steps back so the scene owns the frame.
+.hud__hint {
+  @include mono-label(0.6875rem, 0.06em);
+  max-width: 34rem;
+  margin: 0;
+  text-align: center;
+  text-transform: none;
+  color: var(--hud-muted);
+  animation: hint-settle 800ms ease $hint-hold both;
+}
+
+@keyframes hint-settle {
+  to {
+    opacity: 0.35;
+  }
+}
+
+.hud__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-3;
+  text-align: right;
+}
+
+.hud__weapon {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
 
 .readout {
   display: flex;
-  flex-wrap: wrap;
   gap: $space-5;
-  margin: 0 0 $space-3;
+  margin: 0;
   padding: 0;
-  list-style: none;
+}
+
+.readout__entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .readout__label {
-  @include mono-label(0.625rem, 0.14em);
-  display: block;
+  @include mono-label(0.5625rem, 0.16em);
   margin: 0 0 2px;
   color: var(--hud-muted);
 }
 
 .readout__value {
-  @include mono-label(1.1rem, 0.04em);
-  display: block;
+  @include mono-label(1.25rem, 0.02em);
   margin: 0;
+  line-height: 1;
+  white-space: nowrap;
   color: var(--hud-ink);
   font-variant-numeric: tabular-nums;
+}
+
+// ---------------------------------------------------------------------------
+// Small screens: keep the vitals and counters, lose the decoration.
+// ---------------------------------------------------------------------------
+
+@media (max-width: #{$bp-md - 1px}) {
+  .hud {
+    padding-inline: $space-4;
+  }
+
+  .hud__top,
+  .hud__bottom {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hud__gauge {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .hud__hint,
+  .hud__bracket,
+  .hud__eyebrow {
+    display: none;
+  }
+
+  .readout {
+    gap: $space-4;
+  }
+
+  .readout__value {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud__hint {
+    animation: none;
+    opacity: 0.6;
+  }
 }

@@ -5,10 +5,7 @@
 // Children (PillGroup, StatusLegend, cards) read the --hud-* properties.
 
 .labHud {
-  --hud-ink: #{$color-ink};
-  --hud-muted: #{$color-ink-muted};
-  --hud-surface: rgba(12, 12, 14, 0.62);
-  --hud-border: #{$color-border};
+  @include hud-vars(dark);
 
   position: absolute;
   inset: 0;
@@ -22,10 +19,7 @@
 }
 
 .labHud--light {
-  --hud-ink: #0c0c0e;
-  --hud-muted: #5a5a64;
-  --hud-surface: rgba(242, 242, 240, 0.72);
-  --hud-border: rgba(12, 12, 14, 0.14);
+  @include hud-vars(light);
 }
 
 .labHud__top,

@@ -1,40 +1,95 @@
 @use "../../styles" as *;
 
-// Shield bar under the mission readout: label + a slim track whose fill
-// width is driven inline from the store and recolours as it drains.
+// Vitals bar. The fill is centred so it recedes from both ends; a segment
+// mask sits over it; the whole bar pulses while critical.
+
+$segment: 14px;
 
 .shield {
+  --shield-color: #{$color-live};
+
   display: flex;
-  align-items: center;
-  gap: $space-3;
-  margin: 0 0 $space-3;
+  flex-direction: column;
+  gap: $space-1;
+  color: var(--hud-ink);
 }
 
-.shield__label {
-  @include mono-label(0.625rem, 0.14em);
-  color: var(--hud-muted);
+.shield--warn {
+  --shield-color: #{$color-progress};
+}
+
+.shield--critical {
+  --shield-color: #{$color-rewrite};
+
+  animation: critical 900ms ease-in-out infinite;
 }
 
 .shield__track {
-  flex: 1;
-  height: 6px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 10px;
   border: 1px solid var(--hud-border);
-  border-radius: 999px;
+  background: var(--hud-surface);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 100%, 0 100%);
   overflow: hidden;
 }
 
 .shield__fill {
   height: 100%;
-  background: $color-live;
+  background: var(--shield-color);
+  box-shadow: 0 0 12px var(--shield-color);
   transition:
-    width 160ms ease,
-    background 160ms ease;
+    width 220ms ease,
+    background 220ms ease;
+  animation: hit 360ms ease;
 }
 
-.shield__fill--warn {
-  background: $color-progress;
+.shield__segments {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 ($segment - 2px), var(--hud-surface) ($segment - 2px) $segment);
+  pointer-events: none;
 }
 
-.shield__fill--critical {
-  background: $color-rewrite;
+.shield__meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 $space-1;
+}
+
+.shield__label {
+  @include mono-label(0.5625rem, 0.18em);
+  color: var(--hud-muted);
+}
+
+.shield__value {
+  @include mono-label(0.6875rem, 0.04em);
+  color: var(--shield-color);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes hit {
+  0% {
+    filter: brightness(2.2);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes critical {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shield--critical {
+    animation: none;
+  }
+
+  .shield__fill {
+    animation: none;
+  }
 }

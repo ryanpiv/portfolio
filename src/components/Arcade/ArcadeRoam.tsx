@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import { TuningPanel } from "@components/LabScene";
-import { ARCADE_ROAM_ID, roamConfig, weapons, type LabTheme } from "@data/lab";
+import { ARCADE_ROAM_ID, labLighting, roamConfig, weapons, type LabTheme } from "@data/lab";
 import { projects } from "@data/projects";
 import { useLabViewState } from "@hooks/useLabViewState";
 import { useStore } from "@hooks/useStore";
@@ -18,6 +18,7 @@ import { createRadarFrame } from "./roam/radarFrame";
 import { Radar } from "./roam/Radar";
 import { consumeReturnPortal, rememberReturnPortal } from "./roam/returnPortal";
 import { RoamCallout } from "./roam/RoamCallout";
+import { WeaponReadout } from "./roam/WeaponReadout";
 import { createRoamStore, finishArrival, setSpawnPortal, type PortalTransition as Transition } from "./roam/roamStore";
 import { ShieldBar } from "./ShieldBar";
 import styles from "./Arcade.module.scss";
@@ -80,22 +81,18 @@ export function ArcadeRoam({ initialTheme }: ArcadeRoamProps) {
         onThemeChange={setTheme}
         mode="roam"
         progress={progress}
+        gauge={<ShieldBar shield={game.health} shieldMax={game.healthMax} label="hull" />}
+        tracker={<Radar radarRef={radarRef} {...RADAR_INK[theme]} />}
+        weapon={<WeaponReadout weapon={game.weapon} color={labLighting[theme].statusColors[weapons[game.weapon].color]} />}
         readout={[
           { label: "score", value: String(game.score) },
           { label: "kills", value: String(game.kills) },
           { label: "portals", value: String(game.portals) },
           { label: "explored", value: `${explored} / ${projects.length}` },
-          { label: "weapon", value: weapons[game.weapon].title },
         ]}
-        gauge={
-          <>
-            <ShieldBar shield={game.health} shieldMax={game.healthMax} label="hull" />
-            <Radar radarRef={radarRef} {...RADAR_INK[theme]} />
-          </>
-        }
         hint={HINT}
         center={game.phase === "dead" && <RoamCallout eyebrow="ship lost" title="Respawning…" />}
-        controls={<TuningPanel />}
+        controls={(hidden) => <TuningPanel hidden={hidden} />}
       />
       <PortalTransition transition={game.transition} onDone={onEntered} />
       <PortalTransition transition={game.arrival} direction="arrive" onDone={onArrived} />

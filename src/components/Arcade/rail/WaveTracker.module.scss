@@ -1,0 +1,55 @@
+@use "../../../styles" as *;
+
+// Rail-mode tracker: big wave numeral with a tick per wave.
+
+.tracker {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.tracker__label {
+  @include mono-label(0.5625rem, 0.18em);
+  color: var(--hud-muted);
+}
+
+.tracker__value {
+  @include mono-label(2rem, -0.02em);
+  line-height: 1;
+  color: var(--hud-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tracker__of {
+  @include mono-label(0.75rem, 0.04em);
+  margin-left: $space-2;
+  color: var(--hud-muted);
+}
+
+.tracker__ticks {
+  display: flex;
+  gap: 3px;
+  margin-top: $space-1;
+}
+
+.tracker__tick {
+  width: 18px;
+  height: 4px;
+  background: var(--hud-border);
+  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+}
+
+.tracker__tick--done {
+  background: $color-live;
+}
+
+.tracker__tick--live {
+  background: var(--hud-ink);
+  animation: live 1s ease-in-out infinite;
+}
+
+@keyframes live {
+  50% {
+    opacity: 0.4;
+  }
+}

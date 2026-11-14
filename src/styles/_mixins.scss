@@ -101,3 +101,22 @@
   white-space: nowrap;
   border: 0;
 }
+
+// ---------------------------------------------------------------------------
+// HUD overlays (lab scenes)
+// ---------------------------------------------------------------------------
+
+/// Custom properties every HUD child reads (pills, cards, legends).
+@mixin hud-vars($theme: dark) {
+  @if $theme == light {
+    --hud-ink: #0c0c0e;
+    --hud-muted: #5a5a64;
+    --hud-surface: rgba(242, 242, 240, 0.72);
+    --hud-border: rgba(12, 12, 14, 0.14);
+  } @else {
+    --hud-ink: #{$color-ink};
+    --hud-muted: #{$color-ink-muted};
+    --hud-surface: rgba(12, 12, 14, 0.62);
+    --hud-border: #{$color-border};
+  }
+}
