@@ -67,12 +67,14 @@ PhysicsField/
   controls/      # Leva: useFieldControls + per-folder schema builders
 
 Arcade/
-  index.ts, Arcade.tsx (rail entry), ArcadeRoam.tsx (free-roam entry)
-  ArcadeHud.tsx            # shared DOM chrome: theme + mode switches, readout, achievements; mode-specific slots
-  SceneFrame.tsx            # Canvas + lighting + fog + effects shared by both modes
+  index.ts, ArcadeRail.tsx (rail entry), ArcadeRoam.tsx (free-roam entry) — both render a LabStage
+  ArcadeHud.tsx            # shooter-style HUD: gauge top centre, tracker bottom left, weapon + readout bottom right,
+                           # callouts centre, corner brackets; theme / quality / mode switches; Leva behind a "tuning" toggle
+  SceneFrame.tsx            # LabCanvas + lighting + fog + effects shared by both modes
   ShieldBar.tsx             # shared gauge (rail "shield", roam "hull")
   gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, weaponRef, progress, isLive, damageShip
-  hooks/         # useInput (keys + pointer → ref; boost/brake, Q/E + double-tap roll), useGameFrame, useAfterFirstFrame
+  hooks/         # useInput (keys + pointer → ref; boost/brake, Q/E + double-tap roll; ignores presses on HUD controls),
+                 # useGameFrame, useAfterFirstFrame, useGroupRegistry (id → mounted Group map for entity lists)
   game/          # sim (per-frame bus: lasers, shots, bursts), fireShot (enemy bolt toward the ship), barrelRoll, steering
   entities/      # ShipModel, EnemyModel (primitives), useBarrelRoll (roll request → angle, marks userData.rolling)
   combat/        # Lasers (fires weaponRef's bolts along ship.userData.aim), EnemyShots (deflect while rolling / immune,
@@ -80,13 +82,15 @@ Arcade/
   controls/      # Leva: useCombatControls (shared "Combat" folder), useRailControls (rail)
   progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsPanel
   rail/          # RailScene, GameRun, railContext (useRail = game + config + store), Ship, ChaseCamera, Ground, Scenery,
-                 # Enemies → Enemy, gameStore, waveDirector, buildWave, MissionScreen, WaveCallout
+                 # Enemies → Enemy, gameStore, waveDirector, buildWave, MissionScreen, WaveCallout, WaveTracker
   roam/          # RoamScene, RoamRun, roamContext (useRoam = game + config + store + layout + arenaRef + radarRef),
                  # RoamShip (all-range flight; tower hits graded by how head-on: fatal / heavy / light; death → wreck
                  # timer → respawn at a clear point with immunity blink; emerges from the return portal), RoamCamera,
                  # Arena (grid + instanced towers; heavy bolts chip towers, collapse at 0) + arenaState, Portals → Portal,
-                 # Roamers (wander / scatter and fire back / respawn), PowerUps (weapon + repair pickups, refill on a
-                 # timer), roamStore (score, hull, weapon, phase, arrival), radarFrame + Radar (DOM canvas), RoamCallout,
+                 # Roamers (objects + sim glue) ← roamerBrain (pure wander / scatter / return-fire rules, tuned by
+                 # roamConfig.roamers), shipCollision (pure tower slide + damage curve), PowerUps (weapon + repair
+                 # pickups, refill on a timer), roamStore (score, hull, weapon, phase, arrival), radarFrame + Radar
+                 # (DOM canvas), RoamCallout, WeaponReadout,
                  # PortalTransition (enter: takeover → router.push; arrive: reverse wash), returnPortal (sessionStorage),
                  # useRoamControls
 ```
@@ -103,9 +107,12 @@ Anything two lab scenes share lives outside both:
 
 | Where | What |
 |---|---|
-| `components/LabScene/` | `LabLighting`, `LabEffects` (bloom + flare), `TuningPanel` (Leva host), `Nameplate` (DOM label under a body) |
-| `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/controls/footer) + `LabHudCard`, `LabHudHint` |
-| `hooks/useLabViewState` | URL-synced `theme` / view flags via `buildLabUrl` |
+| `components/LabScene/` | R3F side: `LabCanvas` (the one `<Canvas>`; spends what the quality tier allows, `PerformanceMonitor` steps down on frame drops), `LabLighting`, `LabEffects` (bloom + flare; skipped on tiers without effects), `TuningPanel` (Leva host), `Nameplate` (DOM label under a body) |
+| `components/LabStage/` | DOM side: `LabStage` (fixed full-viewport stage; renders `SceneFallback` instead of the scene when the device has no WebGL), `SceneLoading` |
+| `components/LabSwitches/` | `ThemeSwitch`, `QualitySwitch` pill groups used by both HUDs |
+| `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/controls/footer) + `LabHudCard`, `LabHudHint` — the physics field's HUD |
+| `hooks/useLabViewState` | URL-synced `theme` / `quality` / view flags via `buildLabUrl`; quality defaults from the device probe until picked, `degradeQuality` steps it down |
+| `hooks/useDeviceCapability` + `utils/deviceCapability` | one-shot probe: WebGL, touch-only, reduced motion, low-power → `suggestQuality`, `classicReasons` |
 | `hooks/useStore` + `utils/createStore` | minimal external store for render-loop → React state |
 | `utils/leva` | `slider`, `num` schema helpers |
 | `utils/collision`, `utils/waveLayout`, `utils/arenaLayout`, `utils/arenaSpawn` | sphere / AABB / segment / disc tests; formation offsets + dealing projects into waves; seeded towers + portal ring; clear-point search + respawn heading |
@@ -120,6 +127,8 @@ Anything two lab scenes share lives outside both:
 | `ExternalLink` | `<a target="_blank" rel="noreferrer">` |
 | `PillGroup` / `PillNav` | segmented control (buttons) / link flavour; themed via `--hud-*` custom properties |
 | `StatusBadge` / `StatusLegend` | status chip / color key, both reading `PROJECT_STATUS_LABELS` |
+| `SlantStage` / `SlantPanel` / `SlantDetail` | the sheared character-select strip: skewed row, counter-skewed content, pleated curtains that part on hover, detail sheet that unfurls. Exposes `--panel-picked / --panel-scale / --panel-secondary` to consumers. `bleed` oversizes the row for full-width stages; off, the row is inset so the whole parallelogram shows |
+| `ProjectRoster` / `ProjectsBrowser` | roster of projects on `SlantStage` (spine along the slant when idle, card sheet when picked) and the roster ⇄ grid toggle on `/projects` (grid only below `$bp-md`) |
 
 ## Styles
 
@@ -129,7 +138,7 @@ Anything two lab scenes share lives outside both:
 @use "../../styles" as *;   // relative path — Turbopack ignores sassOptions.includePaths
 ```
 
-Mixins: `page-container`, `respond-up`, `list-reset`, `mono-label`, `eyebrow`, `display-title`, `lede`, `mono-meta`, `mono-link`, `surface`, `focus-ring`, `visually-hidden`. Add a mixin the second time a pattern appears, not the first.
+Mixins: `page-container`, `respond-up`, `list-reset`, `mono-label`, `eyebrow`, `display-title`, `lede`, `mono-meta`, `mono-link`, `surface`, `focus-ring`, `visually-hidden`, `hud-vars` (the `--hud-ink / --hud-muted / --hud-surface / --hud-border` set per theme). Add a mixin the second time a pattern appears, not the first.
 
 ## Utils and hooks
 
@@ -148,11 +157,13 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `arcadeRail.ts` (ship/world/camera/combat/scoring tuning + page meta), `arcadeWaves.ts` (wave table — counts sum to the project total so every project flies once), `arcadeRoam.ts` (flight/arena/camera/scoring tuning + page meta), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `quality.ts` (render tiers low / balanced / high: DPR, shadows, effects), `view.ts` (visitor options + guards), `arcadeRail.ts` (ship/world/camera/combat/scoring tuning + page meta), `arcadeWaves.ts` (wave table — counts sum to the project total so every project flies once), `arcadeRoam.ts` (flight/arena/camera/scoring/hull/collision/roamers/pickups tuning + page meta), `arcadeWeapons.ts` (weapon + power-up tables), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
 
-`/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two sheared panels, character-select style, one into `/lab/arcade/roam` and one into `/projects`, the classic grid. Hover / focus widens a panel and unfurls its detail sheet; it is pure CSS (no client state), with the shear dropped and the call to action always visible below `$bp-md`.
+`/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two `SlantStage` panels, one into `/lab/arcade/roam` and one into `/projects`. The hover mechanic is pure CSS; the only client state is the device probe, which marks Classic "recommended" (and says why) when the device has no WebGL, is touch-only, low-power, or prefers reduced motion. Below `$bp-md` the shear is dropped and the call to action is always visible.
 
-`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/arcade`, and `/lab/arcade/roam` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
+`/projects` defaults to the roster (the same character-select mechanic, one spine per project) with a grid toggle; narrow screens get the grid. This is the "performant choice": no WebGL, nothing animating until hovered.
+
+`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/arcade`, and `/lab/arcade/roam` read `?theme=&quality=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`. Every lab page renders inside `LabStage`: no WebGL → `SceneFallback` with a link to the roster; otherwise the scene at the device's suggested quality tier, stepping down automatically when frames drop.
 
 ## Testing
 
