@@ -38,6 +38,12 @@ export type Burst = {
   color: string;
   /** Debris count multiplier; 1 = a fighter. */
   size?: number;
+  /** Spawn debris across this box around `position` instead of at a point (a tower's footprint). */
+  extent?: Vec3;
+  /** Lit chunks that fall and settle; towers crumble, fighters do not. */
+  rubble?: number;
+  /** Lay the shockwave flat on the ground rather than facing the camera. */
+  ground?: boolean;
 };
 
 /** A request for a real light: a brief flash at a point (muzzle, blast). */

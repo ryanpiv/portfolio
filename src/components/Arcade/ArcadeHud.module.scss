@@ -65,10 +65,12 @@ $hint-hold: 7s;
   pointer-events: none;
 }
 
+// Clears the site's floating nav button in the corner.
 .hud__tracker {
   display: flex;
   align-items: flex-end;
   min-height: 1px;
+  padding-left: $space-7;
 }
 
 // Readable for a few seconds, then gone: the scene owns the frame.

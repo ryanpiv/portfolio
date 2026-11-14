@@ -14,6 +14,14 @@ import { hdrColor } from "./hdrColor";
 /** Muzzle points in ship-local space; bolts alternate between them. */
 const MUZZLES = [new THREE.Vector3(-2.4, -0.75, -0.6), new THREE.Vector3(2.4, -0.75, -0.6)];
 const BOLT_THICKNESS = 0.14;
+/** The soft glow around a bolt, relative to its core; drawn additively. */
+const GLOW_THICKNESS = 3.6;
+const GLOW_LENGTH = 1.3;
+const GLOW_OPACITY = 0.32;
+/** Muzzle flash: a tiny burst at the gun plus a very brief real light. */
+const MUZZLE_BURST_SIZE = 0.25;
+const MUZZLE_LIGHT = 70;
+const MUZZLE_LIGHT_SECONDS = 0.07;
 /** Wingtip bolts drift inward to meet on the ship's centreline this far ahead. */
 const CONVERGE_DISTANCE = 70;
 const FORWARD = new THREE.Vector3(0, 0, -1);
@@ -21,6 +29,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const IDENTITY = new THREE.Quaternion();
 
 const dummy = new THREE.Object3D();
+const GLOW_SCALE = new THREE.Vector3(GLOW_THICKNESS, GLOW_THICKNESS, GLOW_LENGTH);
 const muzzleWorld = new THREE.Vector3();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
@@ -33,8 +42,9 @@ const fan = new THREE.Quaternion();
  * barrel roll never sprays the shots.
  */
 export function Lasers() {
-  const { combat, lighting, shipRef, inputRef, simRef, weaponRef, progress, isLive } = useGame();
+  const { combat, lighting, effects, shipRef, inputRef, simRef, weaponRef, progress, isLive } = useGame();
   const mesh = useRef<THREE.InstancedMesh>(null);
+  const glow = useRef<THREE.InstancedMesh>(null);
   const cooldown = useRef(0);
   const barrel = useRef(0);
   const { fireRate, laserSpeed, laserLength, laserRange } = combat;
@@ -44,8 +54,9 @@ export function Lasers() {
     const instanced = mesh.current;
     const ship = shipRef.current;
     if (!instanced || !ship) return;
-    const { lasers } = simRef.current;
+    const { lasers, bursts, flashes } = simRef.current;
     const weapon = weaponRef.current;
+    const halo = glow.current;
 
     cooldown.current -= delta;
     if (inputRef.current.fire && cooldown.current <= 0 && isLive()) {
@@ -70,6 +81,10 @@ export function Lasers() {
         barrel.current = (barrel.current + 1) % MUZZLES.length;
         cooldown.current = 1 / (fireRate * weapon.fireRateScale);
         recordStat(progress, "shotsFired");
+        const at: [number, number, number] = [muzzleWorld.x, muzzleWorld.y, muzzleWorld.z];
+        const color = lighting.statusColors[weapon.color];
+        bursts.push({ position: at, color, size: MUZZLE_BURST_SIZE * weapon.size });
+        flashes.push({ position: at, color, intensity: MUZZLE_LIGHT * weapon.size, duration: MUZZLE_LIGHT_SECONDS });
       }
     }
 
@@ -89,21 +104,46 @@ export function Lasers() {
         dummy.quaternion.setFromUnitVectors(FORWARD, direction);
         dummy.scale.set(bolt.size, bolt.size, laserLength);
         instanced.setColorAt(i, colors[bolt.weapon]);
+        if (halo) halo.setColorAt(i, colors[bolt.weapon]);
       } else {
         dummy.scale.setScalar(0);
       }
       dummy.updateMatrix();
       instanced.setMatrixAt(i, dummy.matrix);
+      if (halo) {
+        dummy.scale.multiply(GLOW_SCALE);
+        dummy.updateMatrix();
+        halo.setMatrixAt(i, dummy.matrix);
+      }
     }
     instanced.instanceMatrix.needsUpdate = true;
     if (instanced.instanceColor) instanced.instanceColor.needsUpdate = true;
+    if (halo) {
+      halo.instanceMatrix.needsUpdate = true;
+      if (halo.instanceColor) halo.instanceColor.needsUpdate = true;
+    }
   });
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, LASER_POOL]} frustumCulled={false}>
-      <boxGeometry args={[BOLT_THICKNESS, BOLT_THICKNESS, 1]} />
-      <meshBasicMaterial color="#ffffff" toneMapped={false} />
-    </instancedMesh>
+    <>
+      <instancedMesh ref={mesh} args={[undefined, undefined, LASER_POOL]} frustumCulled={false}>
+        <boxGeometry args={[BOLT_THICKNESS, BOLT_THICKNESS, 1]} />
+        <meshBasicMaterial color="#ffffff" toneMapped={false} />
+      </instancedMesh>
+      {effects.trails && (
+        <instancedMesh ref={glow} args={[undefined, undefined, LASER_POOL]} frustumCulled={false}>
+          <capsuleGeometry args={[BOLT_THICKNESS, 1, 2, 8]} />
+          <meshBasicMaterial
+            color="#ffffff"
+            toneMapped={false}
+            transparent
+            opacity={GLOW_OPACITY}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </instancedMesh>
+      )}
+    </>
   );
 }
 

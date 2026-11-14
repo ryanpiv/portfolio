@@ -78,10 +78,16 @@ export function Arena() {
   );
 }
 
-/** Towers shrink out over this long when destroyed. */
-const COLLAPSE_S = 0.5;
+/** Towers fall over this long when destroyed. */
+const COLLAPSE_S = 0.9;
 /** Debris size for a felled tower, relative to a fighter. */
 const COLLAPSE_BURST = 4;
+/** Rubble chunks per metre of tower height, and per plasma hit. */
+const RUBBLE_PER_METRE = 0.8;
+const HIT_RUBBLE = 3;
+/** A falling tower spreads this much wider as it pancakes, and leans up to this far (radians). */
+const COLLAPSE_SPREAD = 0.25;
+const COLLAPSE_LEAN = 0.2;
 
 type BuildingsProps = { buildings: ReadonlyArray<Building> };
 
@@ -164,13 +170,22 @@ function Buildings({ buildings }: BuildingsProps) {
           const dealt = Math.min(bolt.damage, tower.health);
           tower.health -= dealt;
           recordStat(progress, "damageDealt", dealt);
-          sim.bursts.push({ position: hit, color, size: 1 });
+          sim.bursts.push({ position: hit, color, size: 1, rubble: HIT_RUBBLE });
           attrs.damage.setX(i, 1 - tower.health / tower.maxHealth);
           damaged = true;
           if (tower.health <= 0) {
+            const building = buildings[i];
             tower.alive = false;
             collapsing.current.set(i, 0);
-            sim.bursts.push({ position: tower.center, color, size: COLLAPSE_BURST });
+            sim.bursts.push({ position: tower.center, color, size: COLLAPSE_BURST / 2 });
+            sim.bursts.push({
+              position: [building.position[0], building.size[1] * 0.3, building.position[2]],
+              color,
+              size: COLLAPSE_BURST,
+              extent: [building.size[0], building.size[1] * 0.6, building.size[2]],
+              rubble: Math.round(building.size[1] * RUBBLE_PER_METRE),
+              ground: true,
+            });
             recordTower(store, config.scoring.tower);
             recordStat(progress, "towersDestroyed");
             recordStat(progress, "points", config.scoring.tower);
@@ -204,10 +219,19 @@ function Buildings({ buildings }: BuildingsProps) {
   );
 }
 
-/** Writes a tower's matrix at `scale` of its full height (1 = standing, 0 = gone). */
+/**
+ * Writes a tower's matrix at `scale` of its full height (1 = standing,
+ * 0 = gone). A falling tower drops fast, spreads a little as it pancakes,
+ * and leans in a direction set by its seed.
+ */
 function writeTower(instanced: THREE.InstancedMesh, index: number, b: Building, scale: number) {
-  dummy.position.set(b.position[0], (b.size[1] * scale) / 2, b.position[2]);
-  dummy.scale.set(b.size[0] * scale, b.size[1] * scale, b.size[2] * scale);
+  const fall = 1 - scale;
+  const drop = scale * scale;
+  const spread = 1 + COLLAPSE_SPREAD * fall * (1 - fall);
+  dummy.position.set(b.position[0], (b.size[1] * drop) / 2, b.position[2]);
+  dummy.scale.set(b.size[0] * spread, b.size[1] * drop, b.size[2] * spread);
+  const lean = COLLAPSE_LEAN * fall;
+  dummy.rotation.set(Math.cos(b.seed * Math.PI * 2) * lean, 0, Math.sin(b.seed * Math.PI * 2) * lean);
   dummy.updateMatrix();
   instanced.setMatrixAt(index, dummy.matrix);
 }
