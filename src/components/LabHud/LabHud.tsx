@@ -14,6 +14,8 @@ type LabHudProps = {
   switches?: ReactNode;
   /** Panel rendered under the switches (Leva). */
   controls?: ReactNode;
+  /** Centred between header and footer (modal-ish screens). */
+  center?: ReactNode;
   /** Bottom row, laid out space-between. */
   footer?: ReactNode;
 };
@@ -23,9 +25,10 @@ type LabHudProps = {
  * through to the canvas except on the switches, controls, and anything a
  * child opts back in. Children read the `--hud-*` custom properties.
  */
-export function LabHud({ theme, eyebrow, title, tagline, switches, controls, footer }: LabHudProps) {
+export function LabHud({ theme, eyebrow, title, tagline, switches, controls, center, footer }: LabHudProps) {
   return (
     <div className={cx(styles.labHud, styles[`labHud--${theme}`])} data-theme={theme}>
+      {center && <div className={styles.labHud__center}>{center}</div>}
       <header className={styles.labHud__top}>
         <div>
           <p className={styles.labHud__eyebrow}>{eyebrow}</p>

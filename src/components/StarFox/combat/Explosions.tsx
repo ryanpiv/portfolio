@@ -43,8 +43,9 @@ export function Explosions() {
     while (bursts.length) {
       const burst = bursts.pop()!;
       const color = hdrColor(burst.color, glowGain);
+      const count = Math.round(PARTICLES_PER_BURST * (burst.size ?? 1));
       let spawned = 0;
-      for (let i = 0; i < list.length && spawned < PARTICLES_PER_BURST; i++) {
+      for (let i = 0; i < list.length && spawned < count; i++) {
         if (list[i].life > 0) continue;
         list[i] = { life: SHARD_LIFE, position: [...burst.position], velocity: ejection(scrollSpeed) };
         instanced.setColorAt(i, color);

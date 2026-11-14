@@ -63,6 +63,17 @@ export type StarFoxConfig = {
     enemyRadius: number;
     /** Waves spawn this far ahead (inside the fog so they fade in). */
     spawnDistance: number;
+    /** Player hit-sphere radius. */
+    shipRadius: number;
+    /** Shield points at the start of a run. */
+    shieldMax: number;
+    /** Shield lost when a fighter rams the ship / when an enemy shot lands. */
+    ramDamage: number;
+    shotDamage: number;
+    /** Seconds between shots for each fighter while it is in range. */
+    enemyFireInterval: number;
+    /** Enemy shot speed along its aim line (the world scroll is added on top). */
+    enemyShotSpeed: number;
   };
 };
 
@@ -98,5 +109,11 @@ export const starFoxConfig: StarFoxConfig = {
     laserRange: 200,
     enemyRadius: 1.7,
     spawnDistance: 170,
+    shipRadius: 1.8,
+    shieldMax: 100,
+    ramDamage: 40,
+    shotDamage: 15,
+    enemyFireInterval: 2.2,
+    enemyShotSpeed: 70,
   },
 };

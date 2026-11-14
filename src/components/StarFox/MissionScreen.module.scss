@@ -1,0 +1,55 @@
+@use "../../styles" as *;
+
+// End-of-run card, centred by LabHud. Opts back into pointer events so the
+// retry button works while the rest of the overlay stays click-through.
+
+.missionScreen {
+  width: min(26rem, 100%);
+  padding: $space-5;
+  border: 1px solid var(--hud-border);
+  border-radius: $radius-md;
+  background: var(--hud-surface);
+  backdrop-filter: blur(10px);
+  color: var(--hud-ink);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.missionScreen__eyebrow {
+  @include mono-label(0.625rem, 0.16em);
+  margin: 0 0 $space-2;
+  color: var(--hud-muted);
+}
+
+.missionScreen__title {
+  @include display-title(1.6rem, 2rem);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.missionScreen__summary {
+  @include mono-label(0.75rem, 0.06em);
+  margin: $space-3 0 0;
+  text-transform: none;
+  color: var(--hud-muted);
+}
+
+.missionScreen__button {
+  @include mono-label(0.6875rem, 0.1em);
+  margin-top: $space-4;
+  padding: 0.55rem 1.2rem;
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  background: var(--hud-ink);
+  color: var(--hud-surface);
+  cursor: pointer;
+  transition: opacity 120ms ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

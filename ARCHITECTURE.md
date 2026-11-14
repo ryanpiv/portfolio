@@ -67,16 +67,18 @@ PhysicsField/
   controls/      # Leva: useFieldControls + per-folder schema builders
 
 StarFox/
-  index.ts, StarFox.tsx, StarFoxScene.tsx, StarFoxHud.tsx, gameContext.ts
+  index.ts, StarFox.tsx, StarFoxScene.tsx, GameRun.tsx, StarFoxHud.tsx, MissionScreen.tsx, gameContext.ts
   hooks/         # useInput (keyboard + pointer → ref), useGameFrame (useFrame with clamped delta)
-  game/          # sim (per-frame bus: lasers, bursts), gameStore (HUD state), waveDirector (pure sequencer), buildWave
-  entities/      # Ship (steering/banking), ShipModel (primitives)
-  combat/        # Lasers, Enemies (director + motion + hits) → Enemy / EnemyModel, Explosions, hdrColor
+  game/          # sim (per-frame bus: lasers, shots, bursts), gameStore (HUD state + damage/hit records),
+                 # waveDirector (pure sequencer), buildWave, fireShot
+  entities/      # Ship (steering/banking/death), ShipModel (primitives)
+  combat/        # Lasers, Enemies (director + motion + ramming + return fire + hits) → Enemy / EnemyModel,
+                 # EnemyShots, Explosions, hdrColor
   world/         # ChaseCamera, Ground (leapfrogging grid tiles), Scenery (recycled instances)
   controls/      # Leva: useStarFoxControls
 ```
 
-Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape). Sibling order in `StarFoxScene` is update order. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
+Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape, damage). Sibling order in `GameRun` is update order. `GameRun` is everything that belongs to one attempt — "fly again" bumps its `key` and resets the store. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
 
 Anything two lab scenes share lives outside both:
 

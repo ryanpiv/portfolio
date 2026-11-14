@@ -5,16 +5,17 @@ import type * as THREE from "three";
 
 import { starFoxWaveTiming, starFoxWaves, type WaveSpec } from "@data/lab";
 import { projects } from "@data/projects";
-import { segmentHitsSphere } from "@utils/collision";
+import { segmentHitsSphere, spheresOverlap } from "@utils/collision";
 import type { Vec3 } from "@utils/fieldLayout";
 import { dealIntoWaves } from "@utils/waveLayout";
 
 import { useGame } from "../gameContext";
-import { useGameFrame } from "../hooks/useGameFrame";
 import { buildWave } from "../game/buildWave";
-import type { GamePhase } from "../game/gameStore";
+import { fireShot } from "../game/fireShot";
+import { applyDamage, isRunLive, recordEscape, recordHit, type GamePhase } from "../game/gameStore";
 import type { Laser } from "../game/sim";
 import { createDirector, stepDirector, type DirectorPhase } from "../game/waveDirector";
+import { useGameFrame } from "../hooks/useGameFrame";
 import { Enemy, type EnemySpawn } from "./Enemy";
 
 /** An enemy has escaped once it is this far behind the camera. */
@@ -23,8 +24,13 @@ const ESCAPE_MARGIN = 6;
 const VERTICAL_WEAVE = 0.5;
 /** Roll (rad) at the extreme of the weave. */
 const WEAVE_BANK = 0.5;
+/** Fighters only shoot while between these distances ahead of the ship. */
+const FIRE_RANGE = { far: 110, near: 25 };
+/** First shot comes this long after entering range; wingmen stagger behind the leader. */
+const FIRST_SHOT_DELAY = 0.4;
+const FIRE_STAGGER = 0.35;
 
-type EnemyMotion = EnemySpawn & { alive: boolean; z: number };
+type EnemyMotion = EnemySpawn & { alive: boolean; z: number; cooldown: number };
 
 const GAME_PHASE: Record<DirectorPhase, GamePhase> = {
   briefing: "briefing",
@@ -33,13 +39,13 @@ const GAME_PHASE: Record<DirectorPhase, GamePhase> = {
   complete: "complete",
 };
 
-/** Spawns waves from the table, flies them at the player, and resolves laser hits. */
+/** Spawns waves from the table, flies them at the player, fires back, and resolves hits both ways. */
 export function Enemies() {
-  const { config, lighting, simRef, store } = useGame();
+  const { config, lighting, shipRef, simRef, store } = useGame();
   const [roster, setRoster] = useState<EnemySpawn[]>([]);
   const dealt = useMemo(() => dealIntoWaves(projects, starFoxWaves), []);
 
-  // Per-frame state: only touched inside useFrame.
+  // Per-frame state: only touched inside useGameFrame.
   const director = useRef(createDirector());
   const wave = useRef<WaveSpec | null>(null);
   const motion = useRef(new Map<string, EnemyMotion>());
@@ -51,27 +57,36 @@ export function Enemies() {
   }, []);
 
   useGameFrame(({ camera, clock }, delta) => {
-    const { combat, world, ship } = config;
+    const ship = shipRef.current;
+    if (!ship) return;
+    const { combat, world, ship: shipConfig } = config;
+    const sim = simRef.current;
     const motions = motion.current;
-    let active = 0;
-    motions.forEach((m) => {
-      if (m.alive) active++;
-    });
+    const live = isRunLive(store.get().phase);
+    const shipPos: Vec3 = [ship.position.x, ship.position.y, ship.position.z];
 
-    const step = stepDirector(director.current, delta, active > 0, starFoxWaveTiming, starFoxWaves.length);
-    if (step.state !== director.current) {
-      director.current = step.state;
-      store.set({ phase: GAME_PHASE[step.state.phase], wave: step.state.wave });
-    }
-    if (step.spawn !== undefined) {
-      const spec = starFoxWaves[step.spawn];
-      const anchor = { spawnDistance: combat.spawnDistance, altitude: ship.altitude };
-      const spawns = buildWave(step.spawn, spec, dealt[step.spawn], anchor);
-      wave.current = spec;
-      motions.clear();
-      spawns.forEach((s) => motions.set(s.id, { ...s, alive: true, z: s.start[2] }));
-      setRoster(spawns);
-      return; // groups mount on the next render
+    if (live) {
+      let active = 0;
+      motions.forEach((m) => {
+        if (m.alive) active++;
+      });
+      const step = stepDirector(director.current, delta, active > 0, starFoxWaveTiming, starFoxWaves.length);
+      if (step.state !== director.current) {
+        director.current = step.state;
+        store.set({ phase: GAME_PHASE[step.state.phase], wave: step.state.wave });
+      }
+      if (step.spawn !== undefined) {
+        const spec = starFoxWaves[step.spawn];
+        const anchor = { spawnDistance: combat.spawnDistance, altitude: shipConfig.altitude };
+        const spawns = buildWave(step.spawn, spec, dealt[step.spawn], anchor);
+        wave.current = spec;
+        motions.clear();
+        spawns.forEach((s, i) =>
+          motions.set(s.id, { ...s, alive: true, z: s.start[2], cooldown: FIRST_SHOT_DELAY + i * FIRE_STAGGER }),
+        );
+        setRoster(spawns);
+        return; // groups mount on the next render
+      }
     }
 
     const spec = wave.current;
@@ -85,24 +100,45 @@ export function Enemies() {
       m.z += closing * delta;
       const sway = Math.sin(t * spec.weave.frequency + m.phase);
       const x = m.offset[0] + sway * spec.weave.amplitude;
-      const y = ship.altitude + m.offset[1] + Math.cos(t * spec.weave.frequency * 0.7 + m.phase) * spec.weave.amplitude * VERTICAL_WEAVE;
+      const y =
+        shipConfig.altitude +
+        m.offset[1] +
+        Math.cos(t * spec.weave.frequency * 0.7 + m.phase) * spec.weave.amplitude * VERTICAL_WEAVE;
       const center: Vec3 = [x, y, m.z];
+      const color = lighting.statusColors[m.project.status];
 
       if (m.z > camera.position.z + ESCAPE_MARGIN) {
         m.alive = false;
         removed.push(id);
-        store.set((s) => ({ escaped: s.escaped + 1 }));
+        recordEscape(store);
         return;
       }
 
-      const bolt = simRef.current.lasers.find((l) => l.active && boltHits(l, center, combat.laserLength, combat.enemyRadius));
+      if (live && spheresOverlap(center, combat.enemyRadius, shipPos, combat.shipRadius)) {
+        m.alive = false;
+        removed.push(id);
+        sim.bursts.push({ position: center, color });
+        applyDamage(store, combat.ramDamage);
+        return;
+      }
+
+      const bolt = sim.lasers.find((l) => l.active && boltHits(l, center, combat.laserLength, combat.enemyRadius));
       if (bolt) {
         bolt.active = false;
         m.alive = false;
         removed.push(id);
-        simRef.current.bursts.push({ position: center, color: lighting.statusColors[m.project.status] });
-        store.set((s) => ({ hits: s.hits + 1 }));
+        sim.bursts.push({ position: center, color });
+        recordHit(store, m.project.slug);
         return;
+      }
+
+      const distance = -m.z;
+      if (live && distance < FIRE_RANGE.far && distance > FIRE_RANGE.near) {
+        m.cooldown -= delta;
+        if (m.cooldown <= 0) {
+          fireShot(sim.shots, center, shipPos, combat.enemyShotSpeed, world.scrollSpeed);
+          m.cooldown = combat.enemyFireInterval;
+        }
       }
 
       const group = groups.current.get(id);

@@ -4,8 +4,9 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import { useGame } from "../gameContext";
-import { useGameFrame } from "../hooks/useGameFrame";
+import { isRunLive } from "../game/gameStore";
 import { LASER_POOL } from "../game/sim";
+import { useGameFrame } from "../hooks/useGameFrame";
 import { hdrColor } from "./hdrColor";
 
 /** Muzzle points in ship-local space; bolts alternate between them. */
@@ -19,7 +20,7 @@ const muzzleWorld = new THREE.Vector3();
 
 /** Twin lasers fired straight ahead (−z) from the wingtips, rate-capped, pooled. */
 export function Lasers() {
-  const { config, lighting, shipRef, input, simRef } = useGame();
+  const { config, lighting, shipRef, input, simRef, store } = useGame();
   const mesh = useRef<THREE.InstancedMesh>(null);
   const cooldown = useRef(0);
   const barrel = useRef(0);
@@ -33,7 +34,7 @@ export function Lasers() {
     const { lasers } = simRef.current;
 
     cooldown.current -= delta;
-    if (input.current.fire && cooldown.current <= 0) {
+    if (input.current.fire && cooldown.current <= 0 && isRunLive(store.get().phase)) {
       const bolt = lasers.find((l) => !l.active);
       if (bolt) {
         ship.updateMatrixWorld();

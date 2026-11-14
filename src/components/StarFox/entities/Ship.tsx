@@ -9,18 +9,32 @@ import { ShipModel } from "./ShipModel";
 
 /** Smoothing rate for roll/pitch (1/s). */
 const ATTITUDE_LAMBDA = 10;
+/** The ship's death burst relative to a fighter's. */
+const DEATH_BURST_SIZE = 3;
 
 const targetVel = new THREE.Vector2();
 
-/** The player: steers inside a box in the view plane, banks into turns. */
+/** The player: steers inside a box in the view plane, banks into turns, and blows up when the shield is gone. */
 export function Ship() {
-  const { config, lighting, shipRef, input } = useGame();
+  const { config, lighting, shipRef, input, simRef, store } = useGame();
   const velocity = useRef(new THREE.Vector2());
   const { ship } = config;
 
   useGameFrame((_, delta) => {
     const group = shipRef.current;
     if (!group) return;
+
+    if (store.get().phase === "failed") {
+      if (group.visible) {
+        group.visible = false;
+        simRef.current.bursts.push({
+          position: [group.position.x, group.position.y, group.position.z],
+          color: lighting.statusColors.showcase,
+          size: DEATH_BURST_SIZE,
+        });
+      }
+      return;
+    }
 
     const { x, y } = input.current;
     targetVel.set(x, y).multiplyScalar(ship.speed);

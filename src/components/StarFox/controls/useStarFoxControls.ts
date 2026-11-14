@@ -39,6 +39,10 @@ export function useStarFoxControls(): StarFoxConfig {
     laserSpeed: slider(base.combat.laserSpeed, 40, 300, 5),
     enemyRadius: slider(base.combat.enemyRadius, 0.5, 4, 0.1),
     spawnDistance: slider(base.combat.spawnDistance, 60, 240, 5),
+    ramDamage: slider(base.combat.ramDamage, 0, 100, 5),
+    shotDamage: slider(base.combat.shotDamage, 0, 100, 5),
+    enemyFireInterval: slider(base.combat.enemyFireInterval, 0.5, 6, 0.1),
+    enemyShotSpeed: slider(base.combat.enemyShotSpeed, 20, 200, 5),
   });
 
   return useMemo<StarFoxConfig>(

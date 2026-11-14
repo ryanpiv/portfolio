@@ -1,39 +1,29 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 
 import { LabEffects, LabLighting } from "@components/LabScene";
 import { labLighting, type LabTheme, type LightingPreset } from "@data/lab";
 
-import { Enemies } from "./combat/Enemies";
-import { Explosions } from "./combat/Explosions";
-import { Lasers } from "./combat/Lasers";
 import { useStarFoxControls } from "./controls/useStarFoxControls";
-import { Ship } from "./entities/Ship";
-import { GameContext } from "./gameContext";
 import type { GameStore } from "./game/gameStore";
-import { createSim } from "./game/sim";
+import { GameRun } from "./GameRun";
 import type { InputRef } from "./hooks/useInput";
-import { ChaseCamera } from "./world/ChaseCamera";
-import { Ground } from "./world/Ground";
-import { Scenery } from "./world/Scenery";
 
 export type StarFoxSceneProps = {
   theme: LabTheme;
   input: InputRef;
   store: GameStore;
+  /** Bump to start a fresh attempt. */
+  runId: number;
 };
 
 /** The WebGL scene. Loaded client-only via `next/dynamic` from `StarFox`. */
-export default function StarFoxScene({ theme, input, store }: StarFoxSceneProps) {
+export default function StarFoxScene({ theme, input, store, runId }: StarFoxSceneProps) {
   const config = useStarFoxControls();
   const lighting = useMemo(() => gameLighting(labLighting[theme]), [theme]);
-  const shipRef = useRef<THREE.Group | null>(null);
-  const simRef = useRef(createSim());
-
-  const context = useMemo(() => ({ config, lighting, shipRef, input, simRef, store }), [config, lighting, input, store]);
 
   return (
     <Canvas
@@ -43,20 +33,11 @@ export default function StarFoxScene({ theme, input, store }: StarFoxSceneProps)
       gl={{ antialias: false, powerPreference: "high-performance" }}
       style={{ touchAction: "none" }}
     >
-      <GameContext.Provider value={context}>
-        <CameraFov fov={config.camera.fov} />
-        <LabLighting lighting={lighting} />
-        <fog attach="fog" args={[lighting.background, config.world.fogNear, config.world.fogFar]} />
-        <Ground />
-        <Scenery key={config.world.sceneryCount} />
-        {/* Sibling order is update order: ship moves, bolts fire from it, enemies test against bolts, debris spawns. */}
-        <Ship />
-        <Lasers />
-        <Enemies />
-        <Explosions />
-        <ChaseCamera />
-        <LabEffects lighting={lighting} />
-      </GameContext.Provider>
+      <CameraFov fov={config.camera.fov} />
+      <LabLighting lighting={lighting} />
+      <fog attach="fog" args={[lighting.background, config.world.fogNear, config.world.fogFar]} />
+      <GameRun key={runId} config={config} lighting={lighting} input={input} store={store} />
+      <LabEffects lighting={lighting} />
     </Canvas>
   );
 }
