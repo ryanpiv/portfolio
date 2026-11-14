@@ -1,0 +1,40 @@
+@use "../../styles" as *;
+
+// Full-viewport stage under the sticky Nav; the canvas paints its own background.
+
+.arcade {
+  --stage-canvas: #{$color-canvas};
+
+  position: fixed;
+  inset: 0;
+  background: var(--stage-canvas);
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+}
+
+.arcade--light {
+  --stage-canvas: #{$color-canvas-light};
+}
+
+.arcade__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.arcade__loading {
+  @include mono-label(0.75rem, 0.1em);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: $color-ink-muted;
+}

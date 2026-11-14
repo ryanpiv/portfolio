@@ -1,7 +1,7 @@
 import { projects } from "@data/projects";
 
 /**
- * Milestones shared by every Star Fox mode. Each one watches a single
+ * Milestones shared by every arcade mode. Each one watches a single
  * lifetime stat and unlocks at a threshold; `utils/progress` does the
  * bookkeeping and `localStorage` keeps it between visits.
  */
@@ -37,7 +37,7 @@ export const achievements: readonly Achievement[] = [
   { id: "explorer", title: "Explorer", description: "Fly through your first portal.", stat: "projectsExplored", threshold: 1 },
   { id: "cartographer", title: "Cartographer", description: "Explore every project through a portal.", stat: "projectsExplored", threshold: projects.length },
   { id: "portal-hopper", title: "Portal Hopper", description: "Fly through ten portals.", stat: "portalsFlown", threshold: 10 },
-  { id: "corneria-clear", title: "Corneria Clear", description: "Survive all four waves of the rail mission.", stat: "railRunsCompleted", threshold: 1 },
+  { id: "clear-skies", title: "Clear Skies", description: "Survive all four waves of the rail mission.", stat: "railRunsCompleted", threshold: 1 },
   { id: "high-score", title: "High Score", description: "Earn five thousand lifetime points.", stat: "points", threshold: 5000 },
   { id: "crash-course", title: "Crash Course", description: "Lose the ship once. It comes back.", stat: "deaths", threshold: 1 },
   { id: "bruiser", title: "Bruiser", description: "Deal a thousand damage.", stat: "damageDealt", threshold: 1000 },

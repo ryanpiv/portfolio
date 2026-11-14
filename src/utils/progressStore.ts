@@ -4,13 +4,15 @@ import { createStore, type Store } from "./createStore";
 import { addStat, emptyProgress, exploreProject, parseProgress, type ProgressState } from "./progress";
 
 /**
- * One progression store for every Star Fox mode, mirrored to localStorage.
- * Create it once per app (see `components/StarFox/progress`), call
+ * One progression store for every arcade mode, mirrored to localStorage.
+ * Create it once per app (see `components/Arcade/progress`), call
  * `hydrateProgress` after mount, and record events through the helpers so
  * achievements unlock in one place.
  */
 
-export const PROGRESS_STORAGE_KEY = "lab.starfox.progress";
+export const PROGRESS_STORAGE_KEY = "lab.arcade.progress";
+/** Key used before the lab was renamed; read once so saves carry over. */
+const LEGACY_STORAGE_KEY = "lab.starfox.progress";
 
 export type ProgressStore = Store<ProgressState>;
 
@@ -32,7 +34,7 @@ export function createProgressStore(): ProgressStore {
 export function hydrateProgress(store: ProgressStore, storage: StorageLike | null = safeStorage()): () => void {
   if (!storage) return () => {};
   try {
-    const raw = storage.getItem(PROGRESS_STORAGE_KEY);
+    const raw = storage.getItem(PROGRESS_STORAGE_KEY) ?? storage.getItem(LEGACY_STORAGE_KEY);
     if (raw) store.set(parseProgress(JSON.parse(raw)));
   } catch {
     // Unreadable save: start fresh rather than crash the lab.

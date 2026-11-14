@@ -25,14 +25,14 @@ export const landingChoices: LandingChoice[] = [
     title: "Arcade",
     tagline: "Fly a ship through an arena where every project is a portal.",
     description:
-      "An all-range Star Fox-style arena. Steer with WASD, boost freely, shoot the roaming fighters, grab weapon power-ups, and fly through a ring to open that project. Crashing just respawns you.",
+      "An all-range arcade flight arena. Steer with WASD, boost freely, shoot the roaming fighters, grab weapon power-ups, and fly through a ring to open that project. Crashing just respawns you.",
     stats: [
       { label: "Controls", value: "WASD · shift · space" },
       { label: "Pace", value: "Portal in ~20 s" },
       { label: "Extras", value: "Achievements, power-ups" },
       { label: "Needs", value: "WebGL, keyboard" },
     ],
-    href: "/lab/starfox/roam",
+    href: "/lab/arcade/roam",
     cta: "Launch",
   },
   {

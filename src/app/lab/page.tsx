@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHeader } from "@components/PageHeader";
-import { LAB_THEMES, labVariants, starFoxMeta, starFoxRoamMeta } from "@data/lab";
+import { LAB_THEMES, labVariants, railMeta, roamMeta } from "@data/lab";
 import { buildLabUrl, defaultLabQuery } from "@utils/labUrl";
 
 import styles from "./lab.module.scss";
@@ -18,8 +18,8 @@ const THEME_LABELS = { dark: "Dark →", light: "Light →" } as const;
 /** Every lab experience gets the same card; variants and the game differ only in route. */
 const experiments = [
   ...labVariants.map(({ id, title, tagline, description }) => ({ id, title, tagline, description })),
-  starFoxMeta,
-  starFoxRoamMeta,
+  railMeta,
+  roamMeta,
 ];
 
 export default function LabPage() {
@@ -28,7 +28,7 @@ export default function LabPage() {
       <PageHeader
         eyebrow="Lab"
         title="Experiments"
-        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a Star Fox-style rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the classic grid at /projects is unchanged."
+        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a arcade rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the classic grid at /projects is unchanged."
       />
 
       <ul className={styles.lab__list}>

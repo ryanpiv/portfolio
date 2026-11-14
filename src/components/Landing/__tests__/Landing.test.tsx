@@ -9,7 +9,7 @@ describe("Landing", () => {
     render(<Landing choices={landingChoices} />);
     const arcade = screen.getByRole("link", { name: /arcade/i });
     const classic = screen.getByRole("link", { name: /classic/i });
-    expect(arcade).toHaveAttribute("href", "/lab/starfox/roam");
+    expect(arcade).toHaveAttribute("href", "/lab/arcade/roam");
     expect(classic).toHaveAttribute("href", "/projects");
     expect(arcade).toHaveTextContent("Launch");
     expect(classic).toHaveTextContent("Browse");

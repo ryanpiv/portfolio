@@ -66,9 +66,9 @@ PhysicsField/
   constraints/   # Constraints switch, Cage, Core, TetherLines, Tether, Attractor
   controls/      # Leva: useFieldControls + per-folder schema builders
 
-StarFox/
-  index.ts, StarFox.tsx (rail entry), StarFoxRoam.tsx (free-roam entry)
-  StarFoxHud.tsx            # shared DOM chrome: theme + mode switches, readout, achievements; mode-specific slots
+Arcade/
+  index.ts, Arcade.tsx (rail entry), ArcadeRoam.tsx (free-roam entry)
+  ArcadeHud.tsx            # shared DOM chrome: theme + mode switches, readout, achievements; mode-specific slots
   SceneFrame.tsx            # Canvas + lighting + fog + effects shared by both modes
   ShieldBar.tsx             # shared gauge (rail "shield", roam "hull")
   gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, weaponRef, progress, isLive, damageShip
@@ -77,7 +77,7 @@ StarFox/
   entities/      # ShipModel, EnemyModel (primitives), useBarrelRoll (roll request → angle, marks userData.rolling)
   combat/        # Lasers (fires weaponRef's bolts along ship.userData.aim), EnemyShots (deflect while rolling / immune,
                  # else damageShip), Explosions, hdrColor — mode-agnostic
-  controls/      # Leva: useCombatControls (shared "Combat" folder), useStarFoxControls (rail)
+  controls/      # Leva: useCombatControls (shared "Combat" folder), useRailControls (rail)
   progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsPanel
   rail/          # RailScene, GameRun, railContext (useRail = game + config + store), Ship, ChaseCamera, Ground, Scenery,
                  # Enemies → Enemy, gameStore, waveDirector, buildWave, MissionScreen, WaveCallout
@@ -93,9 +93,9 @@ StarFox/
 
 Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape, damage, portal). Sibling order in `GameRun` / `RoamRun` is update order. `GameRun` is everything that belongs to one attempt — "fly again" bumps its `key` and resets the store. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
 
-Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll), `userData.rolling`, and `userData.immune`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Weapons are data (`data/lab/starfoxWeapons`): `weaponRef` holds the current spec, `Lasers` arms each bolt with its damage / size / `heavy` flag, and whoever a bolt hits decides what that means (fighters lose HP, only heavy bolts hurt towers). Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
+Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll), `userData.rolling`, and `userData.immune`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Weapons are data (`data/lab/arcadeWeapons`): `weaponRef` holds the current spec, `Lasers` arms each bolt with its damage / size / `heavy` flag, and whoever a bolt hits decides what that means (fighters lose HP, only heavy bolts hurt towers). Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
 
-Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.starfox.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and panel from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
+Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.arcade.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and panel from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
 
 Free roam is a project explorer first, so dying is cheap: hull hits zero → short wreck pause → `utils/arenaSpawn` finds open air near where you were (and a heading that isn't into a wall) → five seconds of blinking immunity. Flying into a portal stores its slug in `sessionStorage` (`roam/returnPortal`) before `router.push`; when the page mounts again (back button) the store's `spawnPortal` is set and `RoamShip` places the ship just outside that ring, nose toward the center, under a reverse "back from" wash.
 
@@ -148,11 +148,11 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera/combat/scoring tuning + page meta), `starfoxWaves.ts` (wave table — counts sum to the project total so every project flies once), `starfoxRoam.ts` (flight/arena/camera/scoring tuning + page meta), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `arcadeRail.ts` (ship/world/camera/combat/scoring tuning + page meta), `arcadeWaves.ts` (wave table — counts sum to the project total so every project flies once), `arcadeRoam.ts` (flight/arena/camera/scoring tuning + page meta), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
 
-`/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two sheared panels, character-select style, one into `/lab/starfox/roam` and one into `/projects`, the classic grid. Hover / focus widens a panel and unfurls its detail sheet; it is pure CSS (no client state), with the shear dropped and the call to action always visible below `$bp-md`.
+`/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two sheared panels, character-select style, one into `/lab/arcade/roam` and one into `/projects`, the classic grid. Hover / focus widens a panel and unfurls its detail sheet; it is pure CSS (no client state), with the shear dropped and the call to action always visible below `$bp-md`.
 
-`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/starfox`, and `/lab/starfox/roam` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
+`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/arcade`, and `/lab/arcade/roam` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
 
 ## Testing
 

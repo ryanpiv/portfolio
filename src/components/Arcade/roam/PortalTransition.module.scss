@@ -1,0 +1,100 @@
+@use "../../../styles" as *;
+
+// Portal takeover. Lengths match TRANSITION_MS / ARRIVAL_MS in PortalTransition.tsx:
+// the status color irises in from the center (0–45%), holds with the title
+// (45–75%), then washes to the page canvas (75–100%) so the project route
+// lands on a plain screen. --stage-canvas comes from the .arcade stage.
+
+$takeover-ms: 1400ms;
+
+.takeover {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  gap: $space-2;
+  background: var(--portal-color);
+  color: var(--stage-canvas, #{$color-canvas});
+  text-align: center;
+  pointer-events: none;
+  animation: iris $takeover-ms ease-in-out both;
+}
+
+.takeover__eyebrow {
+  @include mono-label(0.6875rem, 0.2em);
+  margin: 0;
+  opacity: 0.7;
+  animation: title $takeover-ms ease both;
+}
+
+.takeover__title {
+  @include display-title(1.8rem, 3rem);
+  margin: 0;
+  letter-spacing: -0.02em;
+  animation: title $takeover-ms ease both;
+}
+
+@keyframes iris {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+  }
+  45%,
+  75% {
+    clip-path: circle(120% at 50% 50%);
+    background: var(--portal-color);
+  }
+  100% {
+    clip-path: circle(120% at 50% 50%);
+    background: var(--stage-canvas, #{$color-canvas});
+  }
+}
+
+@keyframes title {
+  0%,
+  25% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  45%,
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+// Coming back: start fully covered in the portal color and iris out.
+$arrival-ms: 900ms;
+
+.takeover--arrive {
+  animation: iris-out $arrival-ms ease-in-out both;
+
+  .takeover__eyebrow,
+  .takeover__title {
+    animation: title-out $arrival-ms ease both;
+  }
+}
+
+@keyframes iris-out {
+  0%,
+  30% {
+    clip-path: circle(120% at 50% 50%);
+  }
+  100% {
+    clip-path: circle(0% at 50% 50%);
+  }
+}
+
+@keyframes title-out {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+  }
+}

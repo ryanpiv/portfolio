@@ -3,7 +3,7 @@ import type { Formation, WaveSpec } from "@data/lab";
 import type { Vec3 } from "./fieldLayout";
 
 /**
- * Pure formation math for the Star Fox lab. Offsets are relative to the
+ * Pure formation math for the arcade lab. Offsets are relative to the
  * wave's anchor; +x right, +y up, +z toward the player (so negative z
  * trails behind the leader). No three.js so it stays unit-testable.
  */

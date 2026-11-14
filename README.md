@@ -8,7 +8,7 @@ Personal portfolio hub: a Next.js site whose homepage offers two ways in — an 
 - Sass + CSS Modules (BEM)
 - Jest + Testing Library + MSW
 - Optional MDX writeups per project
-- `/lab`: WebGL experiments (three.js, react-three-fiber, Rapier, postprocessing, Leva) — physics fields of the project registry, plus a Star Fox-style rail shooter and a free-roam arena whose portals open the project pages, with achievements shared between the two
+- `/lab`: WebGL experiments (three.js, react-three-fiber, Rapier, postprocessing, Leva) — physics fields of the project registry, plus a arcade rail shooter and a free-roam arena whose portals open the project pages, with achievements shared between the two
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for conventions carried into future rewrites.
 

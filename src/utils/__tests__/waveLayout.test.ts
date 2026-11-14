@@ -1,4 +1,4 @@
-import { starFoxWaves, type WaveSpec } from "@data/lab";
+import { railWaves, type WaveSpec } from "@data/lab";
 import { projects } from "@data/projects";
 
 import { dealIntoWaves, formationOffsets, totalEnemies } from "../waveLayout";
@@ -55,10 +55,10 @@ describe("dealIntoWaves", () => {
   });
 });
 
-describe("starFoxWaves", () => {
+describe("railWaves", () => {
   it("fields every project exactly once", () => {
-    expect(totalEnemies(starFoxWaves)).toBe(projects.length);
-    const dealt = dealIntoWaves(projects, starFoxWaves).flat();
+    expect(totalEnemies(railWaves)).toBe(projects.length);
+    const dealt = dealIntoWaves(projects, railWaves).flat();
     expect(new Set(dealt.map((p) => p.slug)).size).toBe(projects.length);
   });
 });

@@ -1,7 +1,7 @@
 import { achievements, type Achievement, type ProgressStatKey } from "@data/lab";
 
 /**
- * Pure bookkeeping for the shared Star Fox progression: lifetime counters,
+ * Pure bookkeeping for the shared arcade progression: lifetime counters,
  * the set of explored projects, and which achievements they unlock.
  */
 
