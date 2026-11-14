@@ -1,13 +1,22 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { PillGroup, type PillOption } from "@components/PillGroup";
+import { usePersistedChoice } from "@hooks/usePersistedChoice";
 import { cx } from "@utils/cx";
 
 import styles from "./ProjectsBrowser.module.scss";
 
 export type ProjectsView = "roster" | "grid";
+
+const PROJECTS_VIEWS: readonly ProjectsView[] = ["roster", "grid"];
+/** localStorage key for the last-used view. */
+export const PROJECTS_VIEW_KEY = "projects.view";
+
+function isProjectsView(value: unknown): value is ProjectsView {
+  return (PROJECTS_VIEWS as readonly unknown[]).includes(value);
+}
 
 type ProjectsBrowserProps = {
   roster: ReactNode;
@@ -22,12 +31,14 @@ const VIEW_OPTIONS: PillOption<ProjectsView>[] = [
 
 /**
  * Switch between the roster (default, wide screens) and the plain grid.
- * Both are server-rendered and passed in; this only toggles which shows.
- * Below the medium breakpoint the roster hides itself and the grid always
- * shows, so the switch is hidden there too.
+ * Both are server-rendered and passed in; this only toggles which shows,
+ * and the last choice is remembered for the next visit. Below the medium
+ * breakpoint the roster hides itself and the grid always shows, so the
+ * switch is hidden there too.
  */
 export function ProjectsBrowser({ roster, grid, defaultView = "roster" }: ProjectsBrowserProps) {
-  const [view, setView] = useState<ProjectsView>(defaultView);
+  const [stored, setView] = usePersistedChoice(PROJECTS_VIEW_KEY, defaultView, isProjectsView);
+  const view = stored ?? defaultView;
   return (
     <div className={styles.browser}>
       <div className={styles.browser__switch}>

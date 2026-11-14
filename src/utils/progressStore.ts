@@ -2,6 +2,7 @@ import type { ProgressStatKey } from "@data/lab";
 
 import { createStore, type Store } from "./createStore";
 import { addStat, emptyProgress, exploreProject, parseProgress, type ProgressState } from "./progress";
+import { safeStorage, type StorageLike } from "./storage";
 
 /**
  * One progression store for every arcade mode, mirrored to localStorage.
@@ -15,16 +16,6 @@ export const PROGRESS_STORAGE_KEY = "lab.arcade.progress";
 const LEGACY_STORAGE_KEY = "lab.starfox.progress";
 
 export type ProgressStore = Store<ProgressState>;
-
-type StorageLike = Pick<Storage, "getItem" | "setItem">;
-
-function safeStorage(): StorageLike | null {
-  try {
-    return typeof window === "undefined" ? null : window.localStorage;
-  } catch {
-    return null; // privacy mode / disabled storage
-  }
-}
 
 export function createProgressStore(): ProgressStore {
   return createStore<ProgressState>(emptyProgress);

@@ -14,6 +14,9 @@ function fakeStorage(initial: Record<string, string> = {}) {
     setItem: (key: string, value: string) => {
       data[key] = value;
     },
+    removeItem(key: string) {
+      delete data[key];
+    },
   };
 }
 
