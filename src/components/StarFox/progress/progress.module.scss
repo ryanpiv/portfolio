@@ -1,0 +1,139 @@
+@use "../../../styles" as *;
+
+// Achievement toast (top centre) and the footer achievements panel.
+
+.toast {
+  position: absolute;
+  top: calc(#{$header-height} + #{$space-5});
+  left: 50%;
+  min-width: 16rem;
+  padding: $space-3 $space-4;
+  border: 1px solid var(--hud-border);
+  border-radius: $radius-md;
+  background: var(--hud-surface);
+  backdrop-filter: blur(8px);
+  color: var(--hud-ink);
+  text-align: center;
+  transform: translateX(-50%);
+  animation: toast 4s ease both;
+  pointer-events: none;
+}
+
+.toast__eyebrow {
+  @include mono-label(0.5625rem, 0.2em);
+  margin: 0 0 2px;
+  color: $color-live;
+}
+
+.toast__title {
+  @include display-title(1.1rem, 1.3rem);
+  letter-spacing: -0.02em;
+}
+
+.toast__description {
+  @include mono-label(0.6875rem, 0.04em);
+  margin: $space-1 0 0;
+  text-transform: none;
+  color: var(--hud-muted);
+}
+
+@keyframes toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  8%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+}
+
+.panel__toggle {
+  display: flex;
+  align-items: baseline;
+  gap: $space-3;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.panel__label {
+  @include mono-label(0.625rem, 0.14em);
+  color: var(--hud-muted);
+}
+
+.panel__count {
+  @include mono-label(1.1rem, 0.04em);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel__list {
+  @include list-reset;
+  display: grid;
+  gap: $space-3;
+  width: 18rem;
+  max-height: 40vh;
+  margin-top: $space-3;
+  overflow: auto;
+  pointer-events: auto;
+}
+
+.panel__item {
+  opacity: 0.7;
+}
+
+.panel__item--done {
+  opacity: 1;
+}
+
+.panel__row {
+  display: flex;
+  justify-content: space-between;
+  gap: $space-3;
+}
+
+.panel__title {
+  @include mono-label(0.75rem, 0.04em);
+  text-transform: none;
+}
+
+.panel__status {
+  @include mono-label(0.6875rem, 0.04em);
+  color: var(--hud-muted);
+  font-variant-numeric: tabular-nums;
+
+  .panel__item--done & {
+    color: $color-live;
+  }
+}
+
+.panel__description {
+  @include mono-label(0.625rem, 0.02em);
+  margin: 2px 0 $space-1;
+  text-transform: none;
+  color: var(--hud-muted);
+}
+
+.panel__track {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--hud-border);
+  overflow: hidden;
+}
+
+.panel__fill {
+  height: 100%;
+  background: $color-live;
+}

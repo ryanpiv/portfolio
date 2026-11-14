@@ -24,10 +24,9 @@ const white = new THREE.Color("#ffffff");
 
 /** Pooled debris bursts, fed from `sim.bursts`. Shards inherit the world scroll so they stream past. */
 export function Explosions() {
-  const { config, lighting, simRef } = useGame();
+  const { scrollSpeed, lighting, simRef } = useGame();
   const mesh = useRef<THREE.InstancedMesh>(null);
   const shards = useRef<Shard[] | null>(null);
-  const { scrollSpeed } = config.world;
   const { glowGain } = lighting;
 
   useGameFrame((_, delta) => {

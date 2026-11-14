@@ -67,19 +67,31 @@ PhysicsField/
   controls/      # Leva: useFieldControls + per-folder schema builders
 
 StarFox/
-  index.ts, StarFox.tsx, StarFoxScene.tsx, GameRun.tsx, gameContext.ts
-  StarFoxHud.tsx, ShieldBar.tsx, WaveCallout.tsx, MissionScreen.tsx   # DOM overlay, reads the game store
-  hooks/         # useInput (keyboard + pointer → ref), useGameFrame (useFrame with clamped delta)
-  game/          # sim (per-frame bus: lasers, shots, bursts), gameStore (HUD state + damage/hit records),
-                 # waveDirector (pure sequencer), buildWave, fireShot
-  entities/      # Ship (steering/banking/death), ShipModel (primitives)
-  combat/        # Lasers, Enemies (director + motion + ramming + return fire + hits) → Enemy / EnemyModel,
-                 # EnemyShots, Explosions, hdrColor
-  world/         # ChaseCamera, Ground (leapfrogging grid tiles), Scenery (recycled instances)
-  controls/      # Leva: useStarFoxControls
+  index.ts, StarFox.tsx (rail entry), StarFoxRoam.tsx (free-roam entry)
+  StarFoxHud.tsx            # shared DOM chrome: theme + mode switches, readout, achievements; mode-specific slots
+  SceneFrame.tsx            # Canvas + lighting + fog + effects shared by both modes
+  gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, progress, isLive
+  hooks/         # useInput (keys + pointer → ref; boost/brake, Q/E + double-tap roll), useGameFrame, useAfterFirstFrame
+  game/          # sim (per-frame bus: lasers, shots, bursts), barrelRoll (timing + angle), steering (pure heading math)
+  entities/      # ShipModel, EnemyModel (primitives), useBarrelRoll (roll request → angle, marks userData.rolling)
+  combat/        # Lasers (fires along ship.userData.aim), Explosions, hdrColor — mode-agnostic
+  controls/      # Leva: useCombatControls (shared "Combat" folder), useStarFoxControls (rail)
+  progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsPanel
+  rail/          # RailScene, GameRun, railContext (useRail = game + config + store), Ship, ChaseCamera, Ground, Scenery,
+                 # Enemies → Enemy, EnemyShots (deflected during a roll), gameStore, waveDirector, buildWave, fireShot,
+                 # MissionScreen, ShieldBar, WaveCallout
+  roam/          # RoamScene, RoamRun, roamContext (useRoam = game + config + store + layout + radarRef), RoamShip
+                 # (all-range: yaw/pitch/throttle, arena bounds, tower push-out), RoamCamera, Arena (grid + instanced
+                 # towers), Portals → Portal (ring per project; fly-through → enterPortal), Roamers (wander / scatter /
+                 # respawn), roamStore, radarFrame + Radar (DOM canvas), PortalTransition (takeover → router.push),
+                 # useRoamControls
 ```
 
-Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape, damage). Sibling order in `GameRun` is update order. `GameRun` is everything that belongs to one attempt — "fly again" bumps its `key` and resets the store. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
+Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape, damage, portal). Sibling order in `GameRun` / `RoamRun` is update order. `GameRun` is everything that belongs to one attempt — "fly again" bumps its `key` and resets the store. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
+
+Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll) and `userData.rolling`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
+
+Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.starfox.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and panel from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
 
 Anything two lab scenes share lives outside both:
 
@@ -90,7 +102,8 @@ Anything two lab scenes share lives outside both:
 | `hooks/useLabViewState` | URL-synced `theme` / view flags via `buildLabUrl` |
 | `hooks/useStore` + `utils/createStore` | minimal external store for render-loop → React state |
 | `utils/leva` | `slider`, `num` schema helpers |
-| `utils/collision`, `utils/waveLayout` | pure sphere tests; formation offsets + dealing projects into waves |
+| `utils/collision`, `utils/waveLayout`, `utils/arenaLayout` | sphere / AABB / disc tests; formation offsets + dealing projects into waves; seeded towers + portal ring |
+| `utils/progress`, `utils/progressStore` | achievement stats reducer; persisted store + `recordStat` / `recordExplored` |
 
 ### Shared primitives
 
@@ -129,9 +142,9 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera/combat tuning + page meta), `starfoxWaves.ts` (wave table — counts sum to the project total so every project flies once), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera/combat/scoring tuning + page meta), `starfoxWaves.ts` (wave table — counts sum to the project total so every project flies once), `starfoxRoam.ts` (flight/arena/camera/scoring tuning + page meta), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
 
-`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]` and `/lab/starfox` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
+`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/starfox`, and `/lab/starfox/roam` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
 
 ## Testing
 

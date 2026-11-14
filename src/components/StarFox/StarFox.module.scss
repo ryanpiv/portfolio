@@ -3,16 +3,18 @@
 // Full-viewport stage under the sticky Nav; the canvas paints its own background.
 
 .starFox {
+  --stage-canvas: #{$color-canvas};
+
   position: fixed;
   inset: 0;
-  background: $color-canvas;
+  background: var(--stage-canvas);
   overflow: hidden;
   user-select: none;
   touch-action: none;
 }
 
 .starFox--light {
-  background: $color-canvas-light;
+  --stage-canvas: #{$color-canvas-light};
 }
 
 .starFox__canvas {

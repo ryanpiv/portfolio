@@ -1,6 +1,6 @@
 import { act, fireEvent, render, renderHook } from "@testing-library/react";
 
-import { useInput } from "../hooks/useInput";
+import { DOUBLE_TAP_MS, useInput } from "../hooks/useInput";
 
 function press(code: string) {
   fireEvent.keyDown(window, { code });
@@ -32,6 +32,60 @@ describe("useInput", () => {
     expect(result.current.input.current.fire).toBe(true);
     act(() => release("Space"));
     expect(result.current.input.current.fire).toBe(false);
+  });
+
+  it("maps shift to boost and X / ctrl to brake, cancelling when both are held", () => {
+    const { result } = renderHook(() => useInput());
+    const input = result.current.input;
+    act(() => press("ShiftLeft"));
+    expect(input.current.throttle).toBe(1);
+    act(() => press("KeyX"));
+    expect(input.current.throttle).toBe(0);
+    act(() => release("ShiftLeft"));
+    expect(input.current.throttle).toBe(-1);
+    act(() => release("KeyX"));
+    expect(input.current.throttle).toBe(0);
+  });
+
+  it("requests a barrel roll from Q / E and from a lateral double-tap", () => {
+    const { result } = renderHook(() => useInput());
+    const input = result.current.input;
+
+    act(() => press("KeyE"));
+    expect(input.current.roll).toBe(1);
+    input.current.roll = 0;
+    act(() => release("KeyE"));
+
+    // KeyboardEvent.timeStamp is read-only; fake the clock with defineProperty.
+    const tapAt = (code: string, time: number) => {
+      const event = new KeyboardEvent("keydown", { code });
+      Object.defineProperty(event, "timeStamp", { value: time });
+      fireEvent(window, event);
+      fireEvent.keyUp(window, { code });
+    };
+
+    act(() => {
+      tapAt("ArrowLeft", 1000);
+      tapAt("ArrowLeft", 1000 + DOUBLE_TAP_MS + 50);
+    });
+    expect(input.current.roll).toBe(0);
+
+    act(() => {
+      tapAt("ArrowLeft", 3000);
+      tapAt("ArrowLeft", 3000 + DOUBLE_TAP_MS - 50);
+    });
+    expect(input.current.roll).toBe(-1);
+  });
+
+  it("ignores key auto-repeat for roll detection", () => {
+    const { result } = renderHook(() => useInput());
+    act(() => {
+      fireEvent.keyDown(window, { code: "KeyD" });
+      fireEvent.keyDown(window, { code: "KeyD", repeat: true });
+      fireEvent.keyDown(window, { code: "KeyD", repeat: true });
+    });
+    expect(result.current.input.current.roll).toBe(0);
+    expect(result.current.input.current.x).toBe(1);
   });
 
   it("steers and fires with a held pointer relative to the stage center", () => {

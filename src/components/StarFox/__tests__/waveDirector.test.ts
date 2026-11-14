@@ -1,4 +1,4 @@
-import { createDirector, stepDirector, type DirectorState, type DirectorStep } from "../game/waveDirector";
+import { createDirector, stepDirector, type DirectorState, type DirectorStep } from "../rail/waveDirector";
 
 const timing = { briefing: 2, between: 1 };
 

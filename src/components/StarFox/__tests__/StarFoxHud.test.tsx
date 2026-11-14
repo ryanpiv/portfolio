@@ -1,37 +1,51 @@
-import { act, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
-import { starFoxWaves } from "@data/lab";
+import { createProgressStore } from "@utils/progressStore";
 
-import { applyDamage, createGameStore, recordEscape, recordHit } from "../game/gameStore";
 import { StarFoxHud } from "../StarFoxHud";
 
-const rules = { waves: starFoxWaves, shieldMax: 100 };
-
-function renderHud(store = createGameStore(rules)) {
-  render(<StarFoxHud theme="dark" onThemeChange={() => {}} store={store} onRetry={() => {}} />);
-  return store;
+function renderHud(mode: "rail" | "roam" = "rail") {
+  render(
+    <StarFoxHud
+      theme="dark"
+      onThemeChange={() => {}}
+      mode={mode}
+      progress={createProgressStore()}
+      readout={[
+        { label: "wave", value: "1 / 4" },
+        { label: "hits", value: "0 / 16" },
+      ]}
+      hint="steer with WASD"
+      gauge={<p>gauge slot</p>}
+      center={<p>center slot</p>}
+    />,
+  );
 }
 
 describe("StarFoxHud", () => {
-  it("renders the readout from the store and follows updates", () => {
-    const store = renderHud();
+  it("renders the readout, gauge, hint, and center slots", () => {
+    renderHud();
     expect(screen.getByText("wave").nextElementSibling).toHaveTextContent("1 / 4");
     expect(screen.getByText("hits").nextElementSibling).toHaveTextContent("0 / 16");
-
-    act(() => {
-      recordHit(store, "parse-ai");
-      recordEscape(store);
-      applyDamage(store, 40);
-    });
-    expect(screen.getByText("hits").nextElementSibling).toHaveTextContent("1 / 16");
-    expect(screen.getByText("escaped").nextElementSibling).toHaveTextContent("1");
-    expect(screen.getByRole("meter", { name: /shield/i })).toHaveAttribute("aria-valuenow", "60");
+    expect(screen.getByText("gauge slot")).toBeInTheDocument();
+    expect(screen.getByText("center slot")).toBeInTheDocument();
+    expect(screen.getByText("steer with WASD")).toBeInTheDocument();
   });
 
-  it("shows the mission screen once the run ends", () => {
-    const store = renderHud();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    act(() => applyDamage(store, 100));
-    expect(screen.getByRole("dialog", { name: /shield gone/i })).toBeInTheDocument();
+  it("links to the other game mode, carrying the theme", () => {
+    renderHud("rail");
+    const nav = screen.getByRole("navigation", { name: /mode/i });
+    const rail = screen.getByRole("link", { name: "rail" });
+    const roam = screen.getByRole("link", { name: "free roam" });
+    expect(nav).toContainElement(rail);
+    expect(rail).toHaveAttribute("aria-current", "page");
+    expect(roam).not.toHaveAttribute("aria-current");
+    expect(roam).toHaveAttribute("href", "/lab/starfox/roam?theme=dark");
+  });
+
+  it("includes the achievements panel", () => {
+    renderHud("roam");
+    expect(screen.getByRole("button", { name: /achievements/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "free roam" })).toHaveAttribute("aria-current", "page");
   });
 });

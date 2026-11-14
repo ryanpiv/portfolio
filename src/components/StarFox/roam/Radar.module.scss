@@ -1,0 +1,11 @@
+@use "../../../styles" as *;
+
+// Minimap canvas inside the footer readout card.
+
+.radar {
+  display: block;
+  margin: 0 0 $space-3;
+  border: 1px solid var(--hud-border);
+  border-radius: 50%;
+  background: var(--hud-surface);
+}

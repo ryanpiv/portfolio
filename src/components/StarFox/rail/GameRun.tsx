@@ -1,0 +1,69 @@
+"use client";
+
+import { useMemo, useRef } from "react";
+import type * as THREE from "three";
+
+import type { LightingPreset, StarFoxConfig } from "@data/lab";
+import type { ProgressStore } from "@utils/progressStore";
+
+import { Explosions } from "../combat/Explosions";
+import { Lasers } from "../combat/Lasers";
+import { GameContext, type GameContextValue } from "../gameContext";
+import { createSim } from "../game/sim";
+import type { InputRef } from "../hooks/useInput";
+import { ChaseCamera } from "./ChaseCamera";
+import { Enemies } from "./Enemies";
+import { EnemyShots } from "./EnemyShots";
+import { isRunLive, type GameStore } from "./gameStore";
+import { Ground } from "./Ground";
+import { RailContext } from "./railContext";
+import { Scenery } from "./Scenery";
+import { Ship } from "./Ship";
+
+type GameRunProps = {
+  config: StarFoxConfig;
+  lighting: LightingPreset;
+  inputRef: InputRef;
+  store: GameStore;
+  progress: ProgressStore;
+};
+
+/**
+ * Everything that belongs to one attempt. Remount (change its `key`) to
+ * start over: the sim pool, ship, waves, and debris all reset together.
+ */
+export function GameRun({ config, lighting, inputRef, store, progress }: GameRunProps) {
+  const shipRef = useRef<THREE.Group | null>(null);
+  const simRef = useRef(createSim());
+
+  const game = useMemo<GameContextValue>(
+    () => ({
+      lighting,
+      combat: config.combat,
+      shipRef,
+      inputRef,
+      simRef,
+      progress,
+      scrollSpeed: config.world.scrollSpeed,
+      isLive: () => isRunLive(store.get().phase),
+    }),
+    [lighting, config.combat, config.world.scrollSpeed, inputRef, progress, store],
+  );
+  const rail = useMemo(() => ({ config, store }), [config, store]);
+
+  return (
+    <GameContext.Provider value={game}>
+      <RailContext.Provider value={rail}>
+        <Ground />
+        <Scenery key={config.world.sceneryCount} />
+        {/* Sibling order is update order: ship moves, bolts fire from it, enemies test against bolts and shoot back, debris spawns. */}
+        <Ship />
+        <Lasers />
+        <Enemies />
+        <EnemyShots />
+        <Explosions />
+        <ChaseCamera />
+      </RailContext.Provider>
+    </GameContext.Provider>
+  );
+}

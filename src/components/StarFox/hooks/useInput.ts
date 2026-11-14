@@ -2,11 +2,17 @@
 
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
+import type { RollDirection } from "../game/barrelRoll";
+
 export type InputState = {
   /** Steering axes in [-1, 1]; +x right, +y up. */
   x: number;
   y: number;
   fire: boolean;
+  /** +1 boost, −1 brake (free roam). */
+  throttle: -1 | 0 | 1;
+  /** One-shot barrel-roll request; the ship zeroes it once consumed. */
+  roll: RollDirection | 0;
 };
 
 export type InputRef = RefObject<InputState>;
@@ -23,12 +29,22 @@ const KEY_AXES: Record<string, Partial<Pick<InputState, "x" | "y">>> = {
 };
 
 const FIRE_KEYS = new Set(["Space", "KeyJ"]);
+const BOOST_KEYS = new Set(["ShiftLeft", "ShiftRight"]);
+const BRAKE_KEYS = new Set(["ControlLeft", "ControlRight", "KeyX"]);
+/** Dedicated roll keys; double-tapping a lateral steer key rolls that way too. */
+const ROLL_KEYS: Record<string, RollDirection> = { KeyQ: -1, KeyE: 1 };
+/** Two presses of the same lateral key within this window count as a double-tap. */
+export const DOUBLE_TAP_MS = 260;
 
 /** Pointer travel (as a fraction of the stage) that maps to full deflection. */
 const POINTER_RANGE = 0.35;
 
 function clamp1(value: number): number {
   return Math.max(-1, Math.min(1, value));
+}
+
+function isHandled(code: string): boolean {
+  return code in KEY_AXES || FIRE_KEYS.has(code) || BOOST_KEYS.has(code) || BRAKE_KEYS.has(code) || code in ROLL_KEYS;
 }
 
 /**
@@ -38,9 +54,10 @@ function clamp1(value: number): number {
  * the pointer also fires, so touch gets a one-finger control scheme.
  */
 export function useInput() {
-  const input = useRef<InputState>({ x: 0, y: 0, fire: false });
+  const input = useRef<InputState>({ x: 0, y: 0, fire: false, throttle: 0, roll: 0 });
   const keys = useRef(new Set<string>());
   const pointer = useRef<{ x: number; y: number } | null>(null);
+  const lastTap = useRef<{ code: string; time: number } | null>(null);
 
   const recompute = () => {
     let x = 0;
@@ -54,15 +71,34 @@ export function useInput() {
       x = pointer.current.x;
       y = pointer.current.y;
     }
+    const held = [...keys.current];
     input.current.x = clamp1(x);
     input.current.y = clamp1(y);
-    input.current.fire = pointer.current !== null || [...keys.current].some((code) => FIRE_KEYS.has(code));
+    input.current.fire = pointer.current !== null || held.some((code) => FIRE_KEYS.has(code));
+    const boost = held.some((code) => BOOST_KEYS.has(code));
+    const brake = held.some((code) => BRAKE_KEYS.has(code));
+    input.current.throttle = boost === brake ? 0 : boost ? 1 : -1;
   };
 
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
-      if (!(event.code in KEY_AXES) && !FIRE_KEYS.has(event.code)) return;
+      if (!isHandled(event.code)) return;
       event.preventDefault();
+      if (event.repeat) return;
+
+      if (event.code in ROLL_KEYS) input.current.roll = ROLL_KEYS[event.code];
+      const lateral = KEY_AXES[event.code]?.x;
+      if (lateral) {
+        const now = event.timeStamp;
+        const last = lastTap.current;
+        if (last?.code === event.code && now - last.time < DOUBLE_TAP_MS) {
+          input.current.roll = lateral as RollDirection;
+          lastTap.current = null;
+        } else {
+          lastTap.current = { code: event.code, time: now };
+        }
+      }
+
       keys.current.add(event.code);
       recompute();
     };

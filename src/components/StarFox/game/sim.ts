@@ -7,11 +7,12 @@ import type { Vec3 } from "@utils/fieldLayout";
 
 export type Laser = {
   active: boolean;
-  /** Current position; `prevZ` is where it was last frame, for swept hit tests. */
+  /** Tip position now and last frame, for swept hit tests. */
   position: Vec3;
-  prevZ: number;
-  /** Lateral drift (world units / s) so wingtip bolts converge ahead of the ship. */
-  vx: number;
+  prev: Vec3;
+  velocity: Vec3;
+  /** Distance covered; bolts despawn past `combat.laserRange`. */
+  travelled: number;
 };
 
 /** An enemy shot: a slow ball aimed at where the ship was when it fired. */
@@ -41,7 +42,13 @@ export const SHOT_POOL = 32;
 
 export function createSim(): Sim {
   return {
-    lasers: Array.from({ length: LASER_POOL }, () => ({ active: false, position: [0, 0, 0], prevZ: 0, vx: 0 })),
+    lasers: Array.from({ length: LASER_POOL }, () => ({
+      active: false,
+      position: [0, 0, 0],
+      prev: [0, 0, 0],
+      velocity: [0, 0, 0],
+      travelled: 0,
+    })),
     shots: Array.from({ length: SHOT_POOL }, () => ({ active: false, position: [0, 0, 0], velocity: [0, 0, 0] })),
     bursts: [],
   };

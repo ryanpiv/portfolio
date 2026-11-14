@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 
-import { ShieldBar } from "../ShieldBar";
+import { ShieldBar } from "../rail/ShieldBar";
 
 describe("ShieldBar", () => {
   it("exposes the shield as a meter percentage", () => {

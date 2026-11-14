@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 
 import { starFoxWaves } from "@data/lab";
 
-import { CALLOUT_MS, WaveCallout } from "../WaveCallout";
+import { CALLOUT_MS, WaveCallout } from "../rail/WaveCallout";
 
 describe("WaveCallout", () => {
   beforeEach(() => jest.useFakeTimers());

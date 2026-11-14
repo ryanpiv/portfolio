@@ -1,22 +1,31 @@
 import { createContext, useContext, type RefObject } from "react";
 import type * as THREE from "three";
 
-import type { LightingPreset, StarFoxConfig } from "@data/lab";
+import type { CombatConfig, LightingPreset } from "@data/lab";
+import type { ProgressStore } from "@utils/progressStore";
 
-import type { GameStore } from "./game/gameStore";
 import type { Sim } from "./game/sim";
 import type { InputRef } from "./hooks/useInput";
 
+/**
+ * What every mode provides to the shared systems (ship model, lasers,
+ * explosions). Mode-specific state hangs off a second context (`rail/`,
+ * `roam/`).
+ */
 export type GameContextValue = {
-  config: StarFoxConfig;
   lighting: LightingPreset;
-  /** The player's ship group; the camera, lasers, and enemies read it per frame. */
+  combat: CombatConfig;
+  /** The player's ship group. `userData.aim` (quaternion) is where it is pointing; `userData.rolling` while barrel-rolling. */
   shipRef: RefObject<THREE.Group | null>;
-  input: InputRef;
+  inputRef: InputRef;
   /** Per-frame mutable state shared by the combat systems. */
   simRef: RefObject<Sim>;
-  /** Low-frequency state for the HUD. */
-  store: GameStore;
+  /** Lifetime stats and achievements, shared across modes. */
+  progress: ProgressStore;
+  /** Forward streaming speed of the world; debris inherits it (0 in free roam). */
+  scrollSpeed: number;
+  /** Whether the player may act right now (not dead, not mid-transition). */
+  isLive: () => boolean;
 };
 
 export const GameContext = createContext<GameContextValue | null>(null);

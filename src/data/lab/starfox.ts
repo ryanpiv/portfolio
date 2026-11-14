@@ -1,7 +1,8 @@
 /**
- * Star Fox lab: a short rail shooter. The ship stays near the origin and
- * the world streams toward the camera along +z. Numbers here seed the Leva
- * panel; promote tuned values back into this file.
+ * Star Fox lab, rail mode: a short rail shooter. The ship stays near the
+ * origin and the world streams toward the camera along +z. Numbers here seed
+ * the Leva panel; promote tuned values back into this file. Free roam lives
+ * in `starfoxRoam.ts` and shares `combat`.
  */
 
 export const STARFOX_ID = "starfox";
@@ -13,6 +14,8 @@ export const starFoxMeta = {
   description:
     "Fly an Arwing-ish wedge down a scrolling grid and shoot down four waves of fighters — one per project in the registry, in its status color.",
 } as const;
+
+export type CombatConfig = StarFoxConfig["combat"];
 
 export type StarFoxConfig = {
   ship: {
@@ -75,6 +78,11 @@ export type StarFoxConfig = {
     /** Enemy shot speed along its aim line (the world scroll is added on top). */
     enemyShotSpeed: number;
   };
+  /** Lifetime points awarded to the shared progression. */
+  scoring: {
+    kill: number;
+    missionComplete: number;
+  };
 };
 
 export const starFoxConfig: StarFoxConfig = {
@@ -115,5 +123,9 @@ export const starFoxConfig: StarFoxConfig = {
     shotDamage: 15,
     enemyFireInterval: 2.2,
     enemyShotSpeed: 70,
+  },
+  scoring: {
+    kill: 100,
+    missionComplete: 1000,
   },
 };

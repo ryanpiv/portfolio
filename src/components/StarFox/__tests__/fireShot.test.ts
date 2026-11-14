@@ -1,4 +1,4 @@
-import { fireShot } from "../game/fireShot";
+import { fireShot } from "../rail/fireShot";
 import { createSim } from "../game/sim";
 
 describe("fireShot", () => {

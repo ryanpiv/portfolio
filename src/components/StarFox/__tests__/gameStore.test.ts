@@ -1,6 +1,6 @@
 import { starFoxWaves } from "@data/lab";
 
-import { applyDamage, createGameStore, isRunLive, recordEscape, recordHit } from "../game/gameStore";
+import { applyDamage, createGameStore, isRunLive, recordEscape, recordHit } from "../rail/gameStore";
 
 const rules = { waves: starFoxWaves, shieldMax: 100 };
 

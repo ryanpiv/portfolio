@@ -6,7 +6,9 @@ import { useControls } from "leva";
 import { starFoxConfig, type StarFoxConfig } from "@data/lab";
 import { slider } from "@utils/leva";
 
-/** Leva panel seeded from `starFoxConfig`; returns the live config. */
+import { useCombatControls } from "./useCombatControls";
+
+/** Leva panel for rail mode, seeded from `starFoxConfig`; returns the live config. */
 export function useStarFoxControls(): StarFoxConfig {
   const base = starFoxConfig;
 
@@ -34,16 +36,7 @@ export function useStarFoxControls(): StarFoxConfig {
     fov: slider(base.camera.fov, 30, 100, 1),
   });
 
-  const combat = useControls("Combat", {
-    fireRate: slider(base.combat.fireRate, 1, 20, 0.5),
-    laserSpeed: slider(base.combat.laserSpeed, 40, 300, 5),
-    enemyRadius: slider(base.combat.enemyRadius, 0.5, 4, 0.1),
-    spawnDistance: slider(base.combat.spawnDistance, 60, 240, 5),
-    ramDamage: slider(base.combat.ramDamage, 0, 100, 5),
-    shotDamage: slider(base.combat.shotDamage, 0, 100, 5),
-    enemyFireInterval: slider(base.combat.enemyFireInterval, 0.5, 6, 0.1),
-    enemyShotSpeed: slider(base.combat.enemyShotSpeed, 20, 200, 5),
-  });
+  const combat = useCombatControls();
 
   return useMemo<StarFoxConfig>(
     () => ({
@@ -57,7 +50,8 @@ export function useStarFoxControls(): StarFoxConfig {
         lookAhead: camera.lookAhead,
         fov: camera.fov,
       },
-      combat: { ...base.combat, ...combat },
+      combat,
+      scoring: base.scoring,
     }),
     [base, ship, world, camera, combat],
   );

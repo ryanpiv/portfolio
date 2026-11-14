@@ -3,21 +3,31 @@
 import type { ReactNode } from "react";
 
 import { LabHud, LabHudCard, LabHudHint } from "@components/LabHud";
-import { PillGroup, type PillOption } from "@components/PillGroup";
-import { starFoxMeta, type LabTheme } from "@data/lab";
-import { useStore } from "@hooks/useStore";
+import { PillGroup, PillNav, type PillOption } from "@components/PillGroup";
+import { STARFOX_ID, STARFOX_ROAM_ID, starFoxMeta, starFoxRoamMeta, type LabTheme } from "@data/lab";
+import { buildLabUrl, defaultLabQuery } from "@utils/labUrl";
+import type { ProgressStore } from "@utils/progressStore";
 
-import type { GamePhase, GameStore } from "./game/gameStore";
-import { MissionScreen } from "./MissionScreen";
-import { ShieldBar } from "./ShieldBar";
+import { AchievementsPanel, AchievementToast } from "./progress";
 import styles from "./StarFoxHud.module.scss";
-import { WaveCallout } from "./WaveCallout";
+
+export type GameMode = "rail" | "roam";
+
+export type ReadoutEntry = { label: string; value: string };
 
 type StarFoxHudProps = {
   theme: LabTheme;
   onThemeChange: (theme: LabTheme) => void;
-  store: GameStore;
-  onRetry: () => void;
+  mode: GameMode;
+  progress: ProgressStore;
+  /** Mode-specific label/value pairs for the footer card. */
+  readout: ReadonlyArray<ReadoutEntry>;
+  /** Mode-specific controls hint under the readout. */
+  hint: string;
+  /** Extra footer content between the readout and the hint (e.g. the shield bar). */
+  gauge?: ReactNode;
+  /** Mode-specific overlays (callouts, mission screens, radar). */
+  center?: ReactNode;
   controls?: ReactNode;
 };
 
@@ -26,46 +36,72 @@ const THEME_OPTIONS: PillOption<LabTheme>[] = [
   { value: "light", label: "light" },
 ];
 
-const PHASE_HINT: Record<GamePhase, string> = {
-  briefing: "incoming — hold fire until they close",
-  wave: "space / J or hold the pointer to fire · don't get rammed",
-  complete: "all waves cleared",
-  failed: "shield depleted",
+const MODES: ReadonlyArray<{ mode: GameMode; variantId: string; label: string }> = [
+  { mode: "rail", variantId: STARFOX_ID, label: "rail" },
+  { mode: "roam", variantId: STARFOX_ROAM_ID, label: "free roam" },
+];
+
+const META: Record<GameMode, { title: string; tagline: string }> = {
+  rail: starFoxMeta,
+  roam: starFoxRoamMeta,
 };
 
-export function StarFoxHud({ theme, onThemeChange, store, onRetry, controls }: StarFoxHudProps) {
-  const game = useStore(store);
+/** HUD chrome shared by both game modes: theme + mode switches, readout, achievements. */
+export function StarFoxHud({
+  theme,
+  onThemeChange,
+  mode,
+  progress,
+  readout,
+  hint,
+  gauge,
+  center,
+  controls,
+}: StarFoxHudProps) {
+  const modeItems = MODES.map((entry) => ({
+    href: buildLabUrl(entry.variantId, { ...defaultLabQuery, theme }),
+    label: entry.label,
+    active: entry.mode === mode,
+  }));
 
   return (
     <LabHud
       theme={theme}
       eyebrow="Lab · star fox"
-      title={starFoxMeta.title}
-      tagline={starFoxMeta.tagline}
-      switches={<PillGroup label="Theme" options={THEME_OPTIONS} value={theme} onChange={onThemeChange} />}
+      title={META[mode].title}
+      tagline={META[mode].tagline}
+      switches={
+        <>
+          <PillGroup label="Theme" options={THEME_OPTIONS} value={theme} onChange={onThemeChange} />
+          <PillNav label="Mode" items={modeItems} />
+        </>
+      }
       controls={controls}
       center={
         <>
-          <WaveCallout game={game} />
-          <MissionScreen game={game} onRetry={onRetry} />
+          <AchievementToast store={progress} />
+          {center}
         </>
       }
       footer={
-        <LabHudCard live>
-          <dl className={styles.readout}>
-            <Readout label="wave" value={`${Math.min(game.wave + 1, game.waveCount)} / ${game.waveCount}`} />
-            <Readout label="hits" value={`${game.hits} / ${game.total}`} />
-            <Readout label="escaped" value={String(game.escaped)} />
-          </dl>
-          <ShieldBar shield={game.shield} shieldMax={game.shieldMax} />
-          <LabHudHint>WASD / arrows to steer · {PHASE_HINT[game.phase]}</LabHudHint>
-        </LabHudCard>
+        <>
+          <LabHudCard live>
+            <dl className={styles.readout}>
+              {readout.map((entry) => (
+                <Readout key={entry.label} {...entry} />
+              ))}
+            </dl>
+            {gauge}
+            <LabHudHint>{hint}</LabHudHint>
+          </LabHudCard>
+          <AchievementsPanel store={progress} />
+        </>
       }
     />
   );
 }
 
-function Readout({ label, value }: { label: string; value: string }) {
+function Readout({ label, value }: ReadoutEntry) {
   return (
     <div>
       <dt className={styles.readout__label}>{label}</dt>

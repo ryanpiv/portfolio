@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHeader } from "@components/PageHeader";
-import { LAB_THEMES, labVariants, starFoxMeta } from "@data/lab";
+import { LAB_THEMES, labVariants, starFoxMeta, starFoxRoamMeta } from "@data/lab";
 import { buildLabUrl, defaultLabQuery } from "@utils/labUrl";
 
 import styles from "./lab.module.scss";
@@ -10,7 +10,7 @@ import styles from "./lab.module.scss";
 export const metadata: Metadata = {
   title: "Lab",
   description:
-    "Experimental WebGL views of the project registry — spheres with physics, drag and fling, lens flare — and a tiny rail shooter.",
+    "Experimental WebGL views of the project registry — spheres with physics, drag and fling, lens flare — plus a rail shooter and a free-roam arena with portals into the projects.",
 };
 
 const THEME_LABELS = { dark: "Dark →", light: "Light →" } as const;
@@ -19,6 +19,7 @@ const THEME_LABELS = { dark: "Dark →", light: "Light →" } as const;
 const experiments = [
   ...labVariants.map(({ id, title, tagline, description }) => ({ id, title, tagline, description })),
   starFoxMeta,
+  starFoxRoamMeta,
 ];
 
 export default function LabPage() {
@@ -27,7 +28,7 @@ export default function LabPage() {
       <PageHeader
         eyebrow="Lab"
         title="Experiments"
-        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a short Star Fox-style rail shooter in progress. Each has a dark and a light lighting preset. Proofs of concept; the homepage grid is unchanged."
+        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a Star Fox-style rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the homepage grid is unchanged."
       />
 
       <ul className={styles.lab__list}>

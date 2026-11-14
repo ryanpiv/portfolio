@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import { starFoxWaves } from "@data/lab";
 
-import { initialGameState, type GameState } from "../game/gameStore";
-import { MissionScreen } from "../MissionScreen";
+import { initialGameState, type GameState } from "../rail/gameStore";
+import { MissionScreen } from "../rail/MissionScreen";
 
 const base: GameState = initialGameState({ waves: starFoxWaves, shieldMax: 100 });
 
