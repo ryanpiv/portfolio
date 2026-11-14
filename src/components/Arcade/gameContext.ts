@@ -1,7 +1,7 @@
 import { createContext, useContext, type RefObject } from "react";
 import type * as THREE from "three";
 
-import type { CombatConfig, LightingPreset, WeaponSpec } from "@data/lab";
+import type { CombatConfig, EffectSettings, LightingPreset, WeaponSpec } from "@data/lab";
 import type { ProgressStore } from "@utils/progressStore";
 
 import type { Sim } from "./game/sim";
@@ -14,6 +14,8 @@ import type { InputRef } from "./hooks/useInput";
  */
 export type GameContextValue = {
   lighting: LightingPreset;
+  /** The visitor's effect toggles; systems skip what is off. */
+  effects: EffectSettings;
   combat: CombatConfig;
   /**
    * The player's ship group. `userData.aim` (quaternion) is where it is

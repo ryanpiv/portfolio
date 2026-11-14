@@ -40,11 +40,23 @@ export type Burst = {
   size?: number;
 };
 
+/** A request for a real light: a brief flash at a point (muzzle, blast). */
+export type Flash = {
+  position: Vec3;
+  color: string;
+  /** Peak intensity in candela. */
+  intensity: number;
+  /** Seconds to fade out. */
+  duration: number;
+};
+
 export type Sim = {
   lasers: Laser[];
   shots: Shot[];
   /** Drained by `Explosions` every frame. */
   bursts: Burst[];
+  /** Drained by `FlashLights` every frame. */
+  flashes: Flash[];
 };
 
 export const LASER_POOL = 48;
@@ -72,5 +84,6 @@ export function createSim(): Sim {
       age: 0,
     })),
     bursts: [],
+    flashes: [],
   };
 }

@@ -2,7 +2,7 @@ import { projects } from "@data/projects";
 
 import { layoutArena, layoutPortals, PORTAL_ALTITUDE, PORTAL_RING_FRACTION } from "../arenaLayout";
 
-const options = { seed: 11, radius: 200, buildingCount: 60, projects };
+const options = { seed: 11, radius: 200, buildingCount: 60, treeCount: 120, projects };
 
 describe("layoutPortals", () => {
   it("places one portal per project on the ring, facing the center, the first ahead-left of the spawn", () => {
@@ -45,8 +45,44 @@ describe("layoutArena", () => {
   it("keeps the take-off lane ahead of the spawn clear", () => {
     const { buildings } = layoutArena(options);
     for (const b of buildings) {
-      const crossesLane = b.box.max[0] > -16 && b.box.min[0] < 16 && b.box.min[2] < 0 && b.box.max[2] > -120;
+      const crossesLane = b.box.max[0] > -20 && b.box.min[0] < 20 && b.box.min[2] < 0 && b.box.max[2] > -190;
       expect(crossesLane).toBe(false);
+    }
+  });
+
+  it("keeps towers out of the parks and the parks away from the spawn", () => {
+    const { buildings, parks } = layoutArena(options);
+    expect(parks.length).toBeGreaterThan(2);
+    for (const park of parks) {
+      expect(Math.hypot(park.position[0], park.position[2])).toBeGreaterThan(40);
+      for (const b of buildings) {
+        const d = Math.hypot(b.position[0] - park.position[0], b.position[2] - park.position[2]);
+        expect(d).toBeGreaterThan(park.radius);
+      }
+    }
+  });
+
+  it("gives every tower a tint and a seed in [0, 1)", () => {
+    for (const b of layoutArena(options).buildings) {
+      expect(b.tint).toBeGreaterThanOrEqual(0);
+      expect(b.tint).toBeLessThan(1);
+      expect(b.seed).toBeGreaterThanOrEqual(0);
+      expect(b.seed).toBeLessThan(1);
+    }
+  });
+
+  it("plants trees on the ground, inside the arena, and never inside a tower", () => {
+    const { trees, buildings } = layoutArena(options);
+    expect(trees.length).toBeGreaterThan(options.treeCount * 0.8);
+    for (const t of trees) {
+      expect(t.position[1]).toBe(0);
+      expect(Math.hypot(t.position[0], t.position[2])).toBeLessThan(options.radius);
+      expect(t.height).toBeGreaterThanOrEqual(3.5);
+      for (const b of buildings) {
+        const inside =
+          t.position[0] > b.box.min[0] && t.position[0] < b.box.max[0] && t.position[2] > b.box.min[2] && t.position[2] < b.box.max[2];
+        expect(inside).toBe(false);
+      }
     }
   });
 

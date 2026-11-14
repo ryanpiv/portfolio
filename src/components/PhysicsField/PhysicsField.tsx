@@ -67,6 +67,7 @@ export function PhysicsField({ projects, variant, initialTheme, initialQuality, 
           view={view}
           quality={qualityPresets[quality]}
           onDegrade={degradeQuality}
+          effects={effects}
           hovered={hovered}
           dragging={dragging}
           setHovered={setHovered}

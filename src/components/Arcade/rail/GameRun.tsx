@@ -3,11 +3,12 @@
 import { useMemo, useRef } from "react";
 import type * as THREE from "three";
 
-import { weapons, type LightingPreset, type RailConfig } from "@data/lab";
+import { weapons, type EffectSettings, type LightingPreset, type RailConfig } from "@data/lab";
 import type { ProgressStore } from "@utils/progressStore";
 
 import { EnemyShots } from "../combat/EnemyShots";
 import { Explosions } from "../combat/Explosions";
+import { FlashLights } from "../combat/FlashLights";
 import { Lasers } from "../combat/Lasers";
 import { GameContext, type GameContextValue } from "../gameContext";
 import { createSim } from "../game/sim";
@@ -23,6 +24,7 @@ import { Ship } from "./Ship";
 type GameRunProps = {
   config: RailConfig;
   lighting: LightingPreset;
+  effects: EffectSettings;
   inputRef: InputRef;
   store: GameStore;
   progress: ProgressStore;
@@ -32,7 +34,7 @@ type GameRunProps = {
  * Everything that belongs to one attempt. Remount (change its `key`) to
  * start over: the sim pool, ship, waves, and debris all reset together.
  */
-export function GameRun({ config, lighting, inputRef, store, progress }: GameRunProps) {
+export function GameRun({ config, lighting, effects, inputRef, store, progress }: GameRunProps) {
   const shipRef = useRef<THREE.Group | null>(null);
   const simRef = useRef(createSim());
   // Rail mode always flies the twin laser.
@@ -41,6 +43,7 @@ export function GameRun({ config, lighting, inputRef, store, progress }: GameRun
   const game = useMemo<GameContextValue>(
     () => ({
       lighting,
+      effects,
       combat: config.combat,
       shipRef,
       inputRef,
@@ -51,7 +54,7 @@ export function GameRun({ config, lighting, inputRef, store, progress }: GameRun
       isLive: () => isRunLive(store.get().phase),
       damageShip: (amount) => applyDamage(store, amount),
     }),
-    [lighting, config.combat, config.world.scrollSpeed, inputRef, progress, store],
+    [lighting, effects, config.combat, config.world.scrollSpeed, inputRef, progress, store],
   );
   const rail = useMemo(() => ({ config, store }), [config, store]);
 
@@ -66,6 +69,7 @@ export function GameRun({ config, lighting, inputRef, store, progress }: GameRun
         <Enemies />
         <EnemyShots />
         <Explosions />
+        <FlashLights />
         <ChaseCamera />
       </RailContext.Provider>
     </GameContext.Provider>

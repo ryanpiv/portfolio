@@ -22,7 +22,7 @@ export function useRoamControls(): { config: RoamConfig; combat: CombatConfig } 
   });
 
   const arena = useControls("Arena", {
-    buildingCount: slider(base.arena.buildingCount, 0, 200, 5),
+    buildingCount: slider(base.arena.buildingCount, 0, 400, 5),
     roamerCount: slider(base.arena.roamerCount, 0, 20, 1),
     seed: slider(base.arena.seed, 1, 99, 1),
   });

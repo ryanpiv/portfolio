@@ -12,6 +12,7 @@ export type TowerState = {
   /** Footprint center; the debris spawns here. */
   center: [number, number, number];
   health: number;
+  maxHealth: number;
   alive: boolean;
 };
 
@@ -25,6 +26,7 @@ export function createArenaState(layout: ArenaLayout, healthPerMetre: number): A
       box: b.box,
       center: [b.position[0], b.size[1] / 2, b.position[2]],
       health: b.size[1] * healthPerMetre,
+      maxHealth: b.size[1] * healthPerMetre,
       alive: true,
     })),
   };

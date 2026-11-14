@@ -16,6 +16,10 @@ const SHARD_LIFE = 0.8;
 const SHARD_SIZE = 0.5;
 /** Ejection speed range, world units / s. */
 const SHARD_SPEED: [min: number, max: number] = [5, 14];
+/** Bursts at least this big also ask for a real light. */
+const FLASH_MIN_SIZE = 1;
+const FLASH_INTENSITY = 220;
+const FLASH_SECONDS = 0.35;
 
 type Shard = { life: number; position: Vec3; velocity: Vec3 };
 
@@ -38,11 +42,15 @@ export function Explosions() {
     }
     const list = shards.current;
 
-    const { bursts } = simRef.current;
+    const { bursts, flashes } = simRef.current;
     while (bursts.length) {
       const burst = bursts.pop()!;
       const color = hdrColor(burst.color, glowGain);
-      const count = Math.round(PARTICLES_PER_BURST * (burst.size ?? 1));
+      const size = burst.size ?? 1;
+      const count = Math.round(PARTICLES_PER_BURST * size);
+      if (size >= FLASH_MIN_SIZE) {
+        flashes.push({ position: [...burst.position], color: burst.color, intensity: FLASH_INTENSITY * size, duration: FLASH_SECONDS });
+      }
       let spawned = 0;
       for (let i = 0; i < list.length && spawned < count; i++) {
         if (list[i].life > 0) continue;

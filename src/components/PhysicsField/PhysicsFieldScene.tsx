@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Physics } from "@react-three/rapier";
 
 import { LabCanvas } from "@components/LabScene";
-import type { FieldViewOptions, LabTheme, LabVariant, QualityPreset } from "@data/lab";
+import type { EffectSettings, FieldViewOptions, LabTheme, LabVariant, QualityPreset } from "@data/lab";
 import type { Project } from "@data/projects";
 
 import { useFieldControls } from "./controls/useFieldControls";
@@ -18,6 +18,7 @@ export type PhysicsFieldSceneProps = FieldInteraction & {
   view: FieldViewOptions;
   quality: QualityPreset;
   onDegrade: () => void;
+  effects: EffectSettings;
 };
 
 const CAMERA = { position: [0, 0, 18] as [number, number, number], fov: 45, near: 0.1, far: 200 };
@@ -34,6 +35,7 @@ export default function PhysicsFieldScene({
   view,
   quality,
   onDegrade,
+  effects,
   ...interaction
 }: PhysicsFieldSceneProps) {
   const [seed, setSeed] = useState(1);
@@ -47,7 +49,14 @@ export default function PhysicsFieldScene({
   return (
     <LabCanvas quality={quality} onDegrade={onDegrade} camera={CAMERA}>
       <Physics gravity={[0, 0, 0]} paused={paused} timeStep="vary">
-        <FieldWorld projects={projects} settings={settings} quality={quality} seed={seed} interaction={interaction} />
+        <FieldWorld
+          projects={projects}
+          settings={settings}
+          quality={quality}
+          effects={effects}
+          seed={seed}
+          interaction={interaction}
+        />
       </Physics>
     </LabCanvas>
   );

@@ -21,7 +21,7 @@ export type RailSceneProps = SceneQuality & {
 };
 
 /** The rail-mode WebGL scene. Loaded client-only via `next/dynamic` from `Arcade`. */
-export default function RailScene({ quality, onDegrade, theme, inputRef, store, progress, runId }: RailSceneProps) {
+export default function RailScene({ quality, onDegrade, effects, theme, inputRef, store, progress, runId }: RailSceneProps) {
   const config = useRailControls();
   const lighting = useMemo(() => gameLighting(labLighting[theme]), [theme]);
 
@@ -29,11 +29,20 @@ export default function RailScene({ quality, onDegrade, theme, inputRef, store, 
     <SceneFrame
       quality={quality}
       onDegrade={onDegrade}
+      effects={effects}
       lighting={lighting}
       fog={{ near: config.world.fogNear, far: config.world.fogFar }}
       camera={{ position: config.camera.offset, fov: config.camera.fov }}
     >
-      <GameRun key={runId} config={config} lighting={lighting} inputRef={inputRef} store={store} progress={progress} />
+      <GameRun
+        key={runId}
+        config={config}
+        lighting={lighting}
+        effects={effects}
+        inputRef={inputRef}
+        store={store}
+        progress={progress}
+      />
     </SceneFrame>
   );
 }

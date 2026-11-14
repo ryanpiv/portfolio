@@ -36,9 +36,29 @@ export type RoamConfig = {
     minAltitude: number;
     maxAltitude: number;
     buildingCount: number;
+    /** Trees at the "dense" foliage setting; sparse plants a fraction of them. */
+    treeCount: number;
     roamerCount: number;
     /** Deterministic layout seed. */
     seed: number;
+  };
+  /** Color and light in the arena; the lighting preset supplies the key light and background. */
+  world: {
+    /** Tower hues, picked by each district's tint. Blended lightly over the preset's hull color. */
+    towerPalette: readonly string[];
+    /** How far a tower leans toward its palette color (0 = all hull, 1 = all palette). */
+    towerPaletteMix: number;
+    /** Lit-window color; glow is scaled down in daylight presets. */
+    windowColor: string;
+    /** Fraction of windows that are lit. */
+    windowLitFraction: number;
+    /** Window grid: cell width and floor height in world units. */
+    windowCell: [width: number, height: number];
+    canopyPalette: readonly string[];
+    trunkColor: string;
+    grassColor: string;
+    /** Ship headlight. */
+    headlight: { color: string; intensity: number; distance: number };
   };
   camera: {
     /** Behind and above the ship, along its own axes. */
@@ -130,8 +150,8 @@ export type RoamConfig = {
 
 export const roamConfig: RoamConfig = {
   flight: {
-    cruiseSpeed: 30,
-    boostSpeed: 55,
+    cruiseSpeed: 34,
+    boostSpeed: 64,
     brakeSpeed: 12,
     acceleration: 3,
     turnRate: 1.5,
@@ -140,12 +160,24 @@ export const roamConfig: RoamConfig = {
     bank: 1,
   },
   arena: {
-    radius: 230,
-    minAltitude: 2.5,
-    maxAltitude: 70,
-    buildingCount: 90,
-    roamerCount: 8,
+    radius: 420,
+    minAltitude: 3,
+    maxAltitude: 80,
+    buildingCount: 240,
+    treeCount: 700,
+    roamerCount: 10,
     seed: 11,
+  },
+  world: {
+    towerPalette: ["#5d6f93", "#8c7b6a", "#4f807c", "#8f5f4e", "#6f6a8c"],
+    towerPaletteMix: 0.38,
+    windowColor: "#ffd8a0",
+    windowLitFraction: 0.42,
+    windowCell: [2.6, 3.2],
+    canopyPalette: ["#2f6b4f", "#3f7d4a", "#6b8f3a", "#8a6a3c"],
+    trunkColor: "#4a3a2e",
+    grassColor: "#2b4a3a",
+    headlight: { color: "#dbe8ff", intensity: 90, distance: 55 },
   },
   camera: {
     distance: 14,
@@ -189,7 +221,7 @@ export const roamConfig: RoamConfig = {
     scareDistance: 32,
     boltScareDistance: 8,
     alarmSeconds: 3,
-    fireRange: 120,
+    fireRange: 140,
     firstShotDelay: 0.6,
     respawnDelay: 4,
     playFraction: 0.85,
@@ -197,7 +229,7 @@ export const roamConfig: RoamConfig = {
     respawnMinDistance: 90,
   },
   pickups: {
-    count: 6,
+    count: 10,
     respawnDelay: 12,
     minAltitude: 8,
     maxAltitude: 40,

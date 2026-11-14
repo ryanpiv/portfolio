@@ -69,6 +69,7 @@ export function ArcadeRail({ initialTheme, initialQuality }: ArcadeProps) {
         <RailScene
           quality={qualityPresets[quality]}
           onDegrade={degradeQuality}
+          effects={effects}
           theme={theme}
           inputRef={input}
           store={store}

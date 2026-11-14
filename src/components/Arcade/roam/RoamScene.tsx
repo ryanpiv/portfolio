@@ -13,8 +13,8 @@ import type { RoamStore } from "./roamStore";
 import { useRoamControls } from "./useRoamControls";
 
 /** Fog starts at this fraction of the arena radius and is solid at the far side. */
-const FOG_NEAR_FRACTION = 0.35;
-const FOG_FAR_FRACTION = 2.2;
+const FOG_NEAR_FRACTION = 0.3;
+const FOG_FAR_FRACTION = 1.35;
 
 export type RoamSceneProps = SceneQuality & {
   theme: LabTheme;
@@ -25,7 +25,7 @@ export type RoamSceneProps = SceneQuality & {
 };
 
 /** The free-roam WebGL scene. Loaded client-only via `next/dynamic` from `ArcadeRoam`. */
-export default function RoamScene({ quality, onDegrade, theme, inputRef, store, progress, radarRef }: RoamSceneProps) {
+export default function RoamScene({ quality, onDegrade, effects, theme, inputRef, store, progress, radarRef }: RoamSceneProps) {
   const { config, combat } = useRoamControls();
   const lighting = useMemo(() => gameLighting(labLighting[theme]), [theme]);
   const { radius } = config.arena;
@@ -34,6 +34,7 @@ export default function RoamScene({ quality, onDegrade, theme, inputRef, store, 
     <SceneFrame
       quality={quality}
       onDegrade={onDegrade}
+      effects={effects}
       lighting={lighting}
       fog={{ near: radius * FOG_NEAR_FRACTION, far: radius * FOG_FAR_FRACTION }}
       camera={{ position: [0, config.camera.height + 12, config.camera.distance], fov: config.camera.fov }}
@@ -42,6 +43,7 @@ export default function RoamScene({ quality, onDegrade, theme, inputRef, store, 
         config={config}
         combat={combat}
         lighting={lighting}
+        effects={effects}
         inputRef={inputRef}
         store={store}
         progress={progress}

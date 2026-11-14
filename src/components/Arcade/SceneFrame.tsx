@@ -5,11 +5,12 @@ import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 
 import { LabCanvas, LabEffects, LabLighting } from "@components/LabScene";
-import type { LightingPreset, QualityPreset } from "@data/lab";
+import type { EffectSettings, LightingPreset, QualityPreset } from "@data/lab";
 
 export type SceneQuality = {
   quality: QualityPreset;
   onDegrade: () => void;
+  effects: EffectSettings;
 };
 
 type SceneFrameProps = SceneQuality & {
@@ -20,18 +21,18 @@ type SceneFrameProps = SceneQuality & {
 };
 
 /** Canvas + lighting + fog + post-processing shared by every arcade mode. */
-export function SceneFrame({ quality, onDegrade, lighting, fog, camera, children }: SceneFrameProps) {
+export function SceneFrame({ quality, onDegrade, effects, lighting, fog, camera, children }: SceneFrameProps) {
   return (
     <LabCanvas
       quality={quality}
       onDegrade={onDegrade}
-      camera={{ position: camera.position, fov: camera.fov, near: 0.1, far: 600 }}
+      camera={{ position: camera.position, fov: camera.fov, near: 0.1, far: Math.max(600, fog.far * 1.15) }}
     >
       <CameraFov fov={camera.fov} />
-      <LabLighting lighting={lighting} />
+      <LabLighting lighting={lighting} starRadius={Math.max(70, fog.far * 0.9)} />
       <fog attach="fog" args={[lighting.background, fog.near, fog.far]} />
       {children}
-      <LabEffects lighting={lighting} quality={quality} />
+      <LabEffects lighting={lighting} quality={quality} effects={effects} />
     </LabCanvas>
   );
 }

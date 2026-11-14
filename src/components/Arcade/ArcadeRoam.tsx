@@ -85,6 +85,7 @@ export function ArcadeRoam({ initialTheme, initialQuality }: ArcadeRoamProps) {
         <RoamScene
           quality={qualityPresets[quality]}
           onDegrade={degradeQuality}
+          effects={effects}
           theme={theme}
           inputRef={input}
           store={store}
