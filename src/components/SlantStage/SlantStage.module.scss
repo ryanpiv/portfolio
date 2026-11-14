@@ -1,0 +1,252 @@
+@use "../../styles" as *;
+
+// Sheared character-select strip. The row is skewed by --slant so dividers
+// lean; each panel's inner is skewed back so content stays upright; the
+// row is wider than the stage by the shear overhang so sheared corners
+// never expose the page. Consumers read:
+//   --panel-picked     1 on the hovered / focused panel, else 0
+//   --panel-scale      1 normally, smaller on panels that were not picked
+//   --panel-secondary  1 normally, 0 on panels that were not picked
+//   --panel-accent     set by the consumer; drives the curtain reveal tint
+
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+$grow-ms: 620ms;
+$reveal-ms: 480ms;
+
+.stage {
+  --overhang: calc(var(--stage-height) * tan(var(--slant)));
+  --panel-inset: clamp(1.25rem, 3vw, 2.5rem);
+  // Clearance from the slanted edge on the side that leans into the panel.
+  --diag-inset: clamp(3rem, 14vh, 7rem);
+  // Outer-side padding. A bleeding stage hides half the overhang off-screen,
+  // so content must start past it; a plain strip only needs the inset.
+  --panel-pad: var(--panel-inset);
+
+  position: relative;
+  height: var(--stage-height);
+  overflow: hidden;
+}
+
+.stage--bleed {
+  --panel-pad: calc(var(--overhang) / 2 + var(--panel-inset));
+}
+
+.stage__row {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @include respond-up($bp-md) {
+    flex-direction: row;
+    transform: skewX(calc(var(--slant) * -1));
+
+    // Plain strip: inset by the overhang so the whole parallelogram shows.
+    width: calc(100% - var(--overhang));
+    margin-left: calc(var(--overhang) / 2);
+
+    // Bleeding strip: oversize so sheared corners never expose the page.
+    .stage--bleed & {
+      width: calc(100% + var(--overhang));
+      margin-left: calc(var(--overhang) / -2);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Panel
+// ---------------------------------------------------------------------------
+
+.panel {
+  --panel-picked: 0;
+  --panel-scale: 1;
+  --panel-secondary: 1;
+
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+  color: $color-ink;
+  text-decoration: none;
+  background: $color-surface;
+  transition:
+    flex-grow $grow-ms $ease,
+    filter $grow-ms $ease;
+
+  &:hover,
+  &:focus-visible {
+    --panel-picked: 1;
+
+    flex-grow: var(--expand);
+    outline: none;
+  }
+
+  .stage__row:hover &:not(:hover),
+  .stage__row:focus-within &:not(:focus-visible) {
+    --panel-scale: 0.46;
+    --panel-secondary: 0;
+
+    filter: brightness(0.55) saturate(0.6);
+  }
+
+  & + & {
+    border-top: 1px solid $color-border;
+
+    @include respond-up($bp-md) {
+      border-top: 0;
+      border-left: 1px solid $color-border;
+    }
+  }
+}
+
+// Upright backdrop, oversized sideways so the shear never shows a gap.
+// Consumers style it through .panel's custom properties / className.
+.panel__backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  @include respond-up($bp-md) {
+    inset: 0 calc(var(--overhang) * -1);
+    transform: skewX(var(--slant));
+  }
+}
+
+// Two pleated halves over the backdrop that slide outward when picked.
+.panel__curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 26px, rgba(255, 255, 255, 0.03) 26px 28px),
+    rgba($color-canvas, 0.78);
+  pointer-events: none;
+  transition: transform $grow-ms $ease;
+
+  &:nth-of-type(1) {
+    left: 0;
+    transform-origin: left center;
+  }
+
+  &:nth-of-type(2) {
+    right: 0;
+    transform-origin: right center;
+  }
+
+  .panel:hover &,
+  .panel:focus-visible & {
+    transform: scaleX(0.06);
+  }
+}
+
+.panel__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: $space-5 $space-5;
+  transition: transform $grow-ms $ease;
+
+  @include respond-up($bp-md) {
+    transform: skewX(var(--slant));
+
+    .stage__row:hover .panel:not(:hover) &,
+    .stage__row:focus-within .panel:not(:focus-visible) & {
+      transform: skewX(var(--slant)) translateY(var(--unpicked-shift));
+    }
+  }
+}
+
+.panel--start .panel__inner {
+  align-items: flex-start;
+  text-align: left;
+
+  @include respond-up($bp-md) {
+    padding-left: var(--panel-pad);
+    padding-right: var(--diag-inset);
+  }
+}
+
+.panel--end .panel__inner {
+  align-items: flex-start;
+  text-align: left;
+
+  @include respond-up($bp-md) {
+    align-items: flex-end;
+    text-align: right;
+    padding-right: var(--panel-pad);
+    padding-left: var(--diag-inset);
+  }
+}
+
+.panel--center .panel__inner {
+  align-items: flex-start;
+  text-align: left;
+
+  @include respond-up($bp-md) {
+    padding-inline: var(--panel-pad);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Detail sheet
+// ---------------------------------------------------------------------------
+
+.detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    grid-template-rows $grow-ms $ease,
+    opacity $reveal-ms $ease 80ms,
+    transform $reveal-ms $ease 80ms;
+
+  .panel:hover &,
+  .panel:focus-visible & {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.detail__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: hidden;
+
+  .panel--end & {
+    @include respond-up($bp-md) {
+      align-items: flex-end;
+    }
+  }
+}
+
+// No hover on touch-sized screens: no curtains, details open.
+@media (max-width: #{$bp-md - 1px}) {
+  .panel__curtain {
+    display: none;
+  }
+
+  .detail {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel__curtain,
+  .panel__inner,
+  .detail {
+    transition-duration: 1ms;
+  }
+}

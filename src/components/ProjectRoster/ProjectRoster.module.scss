@@ -1,0 +1,144 @@
+@use "../../styles" as *;
+
+// Project roster on SlantStage: an idle "spine" (name on end) that fades
+// out as the panel is picked, and a card-like sheet that fades in.
+
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+$reveal-ms: 420ms;
+$grow-ms: 620ms;
+
+.roster {
+  --roster-height: min(72vh, 42rem);
+}
+
+.panel {
+  --accent: #{$color-ink-muted};
+
+  // Status colour as a stripe along the top of the backdrop.
+  > :first-child {
+    background: linear-gradient(180deg, var(--accent) 0 4px, transparent 4px),
+      linear-gradient(180deg, rgba($color-ink, 0.03), transparent 40%);
+  }
+}
+
+.panel--live {
+  --accent: #{$color-live};
+}
+
+.panel--in-progress {
+  --accent: #{$color-progress};
+}
+
+.panel--rewrite-planned {
+  --accent: #{$color-rewrite};
+}
+
+.panel--showcase {
+  --accent: #{$color-showcase};
+}
+
+// ---------------------------------------------------------------------------
+// Idle spine. A narrow sheared panel is a thin diagonal, so an upright
+// column would be clipped at both ends; the spine is rotated by the slant to
+// run along the panel's own axis instead, like a book spine on a leaning shelf.
+// ---------------------------------------------------------------------------
+
+.panel__idle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: calc(1 - var(--panel-picked));
+  transition: opacity $reveal-ms $ease;
+  pointer-events: none;
+}
+
+.panel__spine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  height: 88%;
+  writing-mode: vertical-rl;
+  transform: rotate(calc(180deg + var(--slant)));
+  white-space: nowrap;
+}
+
+.panel__slot,
+.panel__year {
+  @include mono-label(0.625rem, 0.16em);
+  color: var(--accent);
+}
+
+.panel__year {
+  color: $color-ink-muted;
+}
+
+.panel__spineTitle {
+  font-weight: 600;
+  // Unpicked spines sit in a narrower column, so the title steps down.
+  font-size: calc(clamp(0.9rem, 1.3vw, 1.2rem) * (0.8 + 0.2 * var(--panel-secondary)));
+  transition: font-size $grow-ms $ease;
+  letter-spacing: -0.01em;
+  color: $color-ink;
+}
+
+// ---------------------------------------------------------------------------
+// Picked sheet
+// ---------------------------------------------------------------------------
+
+.panel__picked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  opacity: var(--panel-picked);
+  transition: opacity $reveal-ms $ease 120ms;
+}
+
+.panel__meta {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  margin-bottom: $space-3;
+}
+
+.panel__metaYear {
+  @include mono-meta;
+}
+
+.panel__title {
+  @include display-title(1.6rem, 2.2rem);
+  letter-spacing: -0.03em;
+}
+
+.panel__description {
+  margin: $space-3 0 $space-4;
+  color: $color-ink-muted;
+  line-height: 1.55;
+}
+
+.panel__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: $space-4;
+  width: 100%;
+  margin-top: $space-4;
+}
+
+.panel__language {
+  @include mono-meta;
+}
+
+.panel__cta {
+  @include mono-link;
+}
+
+// Below md the browser shows the grid instead (see ProjectsBrowser).
+@media (max-width: #{$bp-md - 1px}) {
+  .roster {
+    display: none;
+  }
+}

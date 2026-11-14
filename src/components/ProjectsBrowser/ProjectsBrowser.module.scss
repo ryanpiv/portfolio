@@ -1,0 +1,27 @@
+@use "../../styles" as *;
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.browser__switch {
+  display: none;
+  justify-content: flex-end;
+
+  @include respond-up($bp-md) {
+    display: flex;
+  }
+}
+
+.browser__view--hidden {
+  display: none;
+}
+
+// The roster hides itself below md; the grid always shows there.
+@media (max-width: #{$bp-md - 1px}) {
+  .browser__view--grid {
+    display: block;
+  }
+}
