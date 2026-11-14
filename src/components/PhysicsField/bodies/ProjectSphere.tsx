@@ -4,12 +4,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { BallCollider, RigidBody, type RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 
+import { Nameplate } from "@components/LabScene";
 import type { Project } from "@data/projects";
 import type { FieldBody } from "@utils/fieldLayout";
 
 import { useField } from "../fieldContext";
 import { Tether } from "../constraints/Tether";
-import { Nameplate } from "./Nameplate";
 import { StarHalo } from "./StarHalo";
 import { useBodyMotion } from "./useBodyMotion";
 import { usePointerDrag } from "./usePointerDrag";

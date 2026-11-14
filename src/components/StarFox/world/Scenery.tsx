@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { createRng } from "@utils/fieldLayout";
 
 import { useGame } from "../gameContext";
+import { useGameFrame } from "../hooks/useGameFrame";
 
 type Pillar = { x: number; z: number; w: number; h: number };
 
@@ -24,7 +24,7 @@ export function Scenery() {
   const { sceneryCount, drawDistance, scrollSpeed } = config.world;
   const laneHalfWidth = config.ship.halfWidth + LANE_MARGIN;
 
-  useFrame(({ camera }, delta) => {
+  useGameFrame(({ camera }, delta) => {
     const instanced = mesh.current;
     if (!instanced) return;
     pillars.current ??= seedPillars(sceneryCount, drawDistance, laneHalfWidth);

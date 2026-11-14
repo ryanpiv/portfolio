@@ -4,3 +4,4 @@ export * from "./variants";
 export * from "./view";
 export * from "./lighting";
 export * from "./starfox";
+export * from "./starfoxWaves";

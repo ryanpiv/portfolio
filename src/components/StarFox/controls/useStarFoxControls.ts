@@ -34,6 +34,13 @@ export function useStarFoxControls(): StarFoxConfig {
     fov: slider(base.camera.fov, 30, 100, 1),
   });
 
+  const combat = useControls("Combat", {
+    fireRate: slider(base.combat.fireRate, 1, 20, 0.5),
+    laserSpeed: slider(base.combat.laserSpeed, 40, 300, 5),
+    enemyRadius: slider(base.combat.enemyRadius, 0.5, 4, 0.1),
+    spawnDistance: slider(base.combat.spawnDistance, 60, 240, 5),
+  });
+
   return useMemo<StarFoxConfig>(
     () => ({
       ship: { ...base.ship, ...ship },
@@ -46,7 +53,8 @@ export function useStarFoxControls(): StarFoxConfig {
         lookAhead: camera.lookAhead,
         fov: camera.fov,
       },
+      combat: { ...base.combat, ...combat },
     }),
-    [base, ship, world, camera],
+    [base, ship, world, camera, combat],
   );
 }

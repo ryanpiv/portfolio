@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { useGame } from "../gameContext";
+import { useGameFrame } from "../hooks/useGameFrame";
 import { ShipModel } from "./ShipModel";
 
 /** Smoothing rate for roll/pitch (1/s). */
@@ -18,7 +18,7 @@ export function Ship() {
   const velocity = useRef(new THREE.Vector2());
   const { ship } = config;
 
-  useFrame((_, delta) => {
+  useGameFrame((_, delta) => {
     const group = shipRef.current;
     if (!group) return;
 

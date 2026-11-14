@@ -7,9 +7,14 @@ import type * as THREE from "three";
 import { LabEffects, LabLighting } from "@components/LabScene";
 import { labLighting, type LabTheme, type LightingPreset } from "@data/lab";
 
+import { Enemies } from "./combat/Enemies";
+import { Explosions } from "./combat/Explosions";
+import { Lasers } from "./combat/Lasers";
 import { useStarFoxControls } from "./controls/useStarFoxControls";
 import { Ship } from "./entities/Ship";
 import { GameContext } from "./gameContext";
+import type { GameStore } from "./game/gameStore";
+import { createSim } from "./game/sim";
 import type { InputRef } from "./hooks/useInput";
 import { ChaseCamera } from "./world/ChaseCamera";
 import { Ground } from "./world/Ground";
@@ -18,15 +23,17 @@ import { Scenery } from "./world/Scenery";
 export type StarFoxSceneProps = {
   theme: LabTheme;
   input: InputRef;
+  store: GameStore;
 };
 
 /** The WebGL scene. Loaded client-only via `next/dynamic` from `StarFox`. */
-export default function StarFoxScene({ theme, input }: StarFoxSceneProps) {
+export default function StarFoxScene({ theme, input, store }: StarFoxSceneProps) {
   const config = useStarFoxControls();
   const lighting = useMemo(() => gameLighting(labLighting[theme]), [theme]);
   const shipRef = useRef<THREE.Group | null>(null);
+  const simRef = useRef(createSim());
 
-  const context = useMemo(() => ({ config, lighting, shipRef, input }), [config, lighting, input]);
+  const context = useMemo(() => ({ config, lighting, shipRef, input, simRef, store }), [config, lighting, input, store]);
 
   return (
     <Canvas
@@ -42,7 +49,11 @@ export default function StarFoxScene({ theme, input }: StarFoxSceneProps) {
         <fog attach="fog" args={[lighting.background, config.world.fogNear, config.world.fogFar]} />
         <Ground />
         <Scenery key={config.world.sceneryCount} />
+        {/* Sibling order is update order: ship moves, bolts fire from it, enemies test against bolts, debris spawns. */}
         <Ship />
+        <Lasers />
+        <Enemies />
+        <Explosions />
         <ChaseCamera />
         <LabEffects lighting={lighting} />
       </GameContext.Provider>
@@ -51,8 +62,9 @@ export default function StarFoxScene({ theme, input }: StarFoxSceneProps) {
 }
 
 /**
- * The field presets are tuned for glowing spheres; here only the engine disc
- * should bloom, so raise the threshold and ease off the key light.
+ * The field presets are tuned for glowing spheres; here only HDR surfaces
+ * (engine, lasers, enemy cores, debris) should bloom, so raise the threshold
+ * and ease off the key light.
  */
 function gameLighting(preset: LightingPreset): LightingPreset {
   return {

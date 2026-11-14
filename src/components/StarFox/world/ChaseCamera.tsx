@@ -1,9 +1,9 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { useGame } from "../gameContext";
+import { useGameFrame } from "../hooks/useGameFrame";
 
 const targetPos = new THREE.Vector3();
 const lookAt = new THREE.Vector3();
@@ -13,7 +13,7 @@ export function ChaseCamera() {
   const { config, shipRef } = useGame();
   const { camera: cam, ship } = config;
 
-  useFrame(({ camera }, delta) => {
+  useGameFrame(({ camera }, delta) => {
     const group = shipRef.current;
     if (!group) return;
 

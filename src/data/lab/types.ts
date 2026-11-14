@@ -137,4 +137,6 @@ export type LightingPreset = {
   stars: boolean;
   /** Per-status sphere colors. */
   statusColors: Record<ProjectStatus, string>;
+  /** Multiplier for unlit glow surfaces (lasers, cores, debris) so they clear the bloom threshold; 1 = no boost. */
+  glowGain: number;
 };

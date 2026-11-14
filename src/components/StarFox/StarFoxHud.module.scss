@@ -1,0 +1,26 @@
+@use "../../styles" as *;
+
+// Mission readout: a row of mono label / value pairs inside a LabHudCard.
+
+.readout {
+  display: flex;
+  gap: $space-5;
+  margin: 0 0 $space-3;
+  padding: 0;
+  list-style: none;
+}
+
+.readout__label {
+  @include mono-label(0.625rem, 0.14em);
+  display: block;
+  margin: 0 0 2px;
+  color: var(--hud-muted);
+}
+
+.readout__value {
+  @include mono-label(1.1rem, 0.04em);
+  display: block;
+  margin: 0;
+  color: var(--hud-ink);
+  font-variant-numeric: tabular-nums;
+}

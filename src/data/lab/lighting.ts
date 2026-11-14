@@ -39,6 +39,7 @@ const dark: LightingPreset = {
     "rewrite-planned": "#d9b8ff",
     showcase: "#9cc8f0",
   },
+  glowGain: 2.2,
 };
 
 const light: LightingPreset = {
@@ -74,6 +75,7 @@ const light: LightingPreset = {
     "rewrite-planned": "#7d4fb0",
     showcase: "#2e6f9c",
   },
+  glowGain: 1,
 };
 
 export const labLighting: Record<LabTheme, LightingPreset> = { dark, light };

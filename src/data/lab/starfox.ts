@@ -11,7 +11,7 @@ export const starFoxMeta = {
   title: "Corneria-lite",
   tagline: "A very short rail shooter.",
   description:
-    "Fly an Arwing-ish wedge down a scrolling grid. Steer with the keyboard or by holding the pointer; shooting and enemies land in the next pass.",
+    "Fly an Arwing-ish wedge down a scrolling grid and shoot down four waves of fighters — one per project in the registry, in its status color.",
 } as const;
 
 export type StarFoxConfig = {
@@ -50,6 +50,20 @@ export type StarFoxConfig = {
     lookAhead: number;
     fov: number;
   };
+  combat: {
+    /** Shots per second while the trigger is held. */
+    fireRate: number;
+    /** Laser bolt speed, world units / s. */
+    laserSpeed: number;
+    /** Bolt length, world units. */
+    laserLength: number;
+    /** Bolts despawn this far ahead of the ship. */
+    laserRange: number;
+    /** Enemy hit-sphere radius. */
+    enemyRadius: number;
+    /** Waves spawn this far ahead (inside the fog so they fade in). */
+    spawnDistance: number;
+  };
 };
 
 export const starFoxConfig: StarFoxConfig = {
@@ -76,5 +90,13 @@ export const starFoxConfig: StarFoxConfig = {
     lag: 6,
     lookAhead: 40,
     fov: 62,
+  },
+  combat: {
+    fireRate: 7,
+    laserSpeed: 150,
+    laserLength: 3,
+    laserRange: 200,
+    enemyRadius: 1.7,
+    spawnDistance: 170,
   },
 };

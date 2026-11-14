@@ -32,9 +32,10 @@ function clamp1(value: number): number {
 }
 
 /**
- * Keyboard + pointer steering, written into a ref so the render loop can
- * read it without re-rendering React. Keys win while pressed; otherwise a
- * held pointer steers toward where it sits relative to the stage center.
+ * Keyboard + pointer input, written into a ref so the render loop can read
+ * it without re-rendering React. Keys win while pressed; otherwise a held
+ * pointer steers toward where it sits relative to the stage center. Holding
+ * the pointer also fires, so touch gets a one-finger control scheme.
  */
 export function useInput() {
   const input = useRef<InputState>({ x: 0, y: 0, fire: false });
@@ -55,7 +56,7 @@ export function useInput() {
     }
     input.current.x = clamp1(x);
     input.current.y = clamp1(y);
-    input.current.fire = [...keys.current].some((code) => FIRE_KEYS.has(code));
+    input.current.fire = pointer.current !== null || [...keys.current].some((code) => FIRE_KEYS.has(code));
   };
 
   useEffect(() => {

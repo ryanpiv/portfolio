@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 
 import { useGame } from "../gameContext";
+import { useGameFrame } from "../hooks/useGameFrame";
 
 /** Side length of one grid tile; two tiles leapfrog to look endless. */
 const TILE = 200;
@@ -16,7 +16,7 @@ export function Ground() {
   const tiles = useRef<Array<THREE.GridHelper | null>>([null, null]);
   const { groundY, scrollSpeed } = config.world;
 
-  useFrame((_, delta) => {
+  useGameFrame((_, delta) => {
     for (const tile of tiles.current) {
       if (!tile) continue;
       tile.position.z += scrollSpeed * delta;

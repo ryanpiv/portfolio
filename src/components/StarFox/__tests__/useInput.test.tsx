@@ -34,7 +34,7 @@ describe("useInput", () => {
     expect(result.current.input.current.fire).toBe(false);
   });
 
-  it("steers with a held pointer relative to the stage center", () => {
+  it("steers and fires with a held pointer relative to the stage center", () => {
     const { result } = renderHook(() => useInput());
     const { bind, input } = result.current;
     const { container } = render(<div data-testid="stage" {...bind} />);
@@ -50,10 +50,11 @@ describe("useInput", () => {
     pointer("pointerdown", 1000, 500);
     expect(input.current.x).toBe(1);
     expect(input.current.y).toBeCloseTo(0);
+    expect(input.current.fire).toBe(true);
     pointer("pointermove", 500, 0);
     expect(input.current.x).toBeCloseTo(0);
     expect(input.current.y).toBe(1);
     pointer("pointerup", 500, 0);
-    expect(input.current).toMatchObject({ x: 0, y: 0 });
+    expect(input.current).toMatchObject({ x: 0, y: 0, fire: false });
   });
 });

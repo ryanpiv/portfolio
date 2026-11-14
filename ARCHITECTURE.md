@@ -68,20 +68,26 @@ PhysicsField/
 
 StarFox/
   index.ts, StarFox.tsx, StarFoxScene.tsx, StarFoxHud.tsx, gameContext.ts
-  hooks/         # useInput (keyboard + pointer → ref)
+  hooks/         # useInput (keyboard + pointer → ref), useGameFrame (useFrame with clamped delta)
+  game/          # sim (per-frame bus: lasers, bursts), gameStore (HUD state), waveDirector (pure sequencer), buildWave
   entities/      # Ship (steering/banking), ShipModel (primitives)
+  combat/        # Lasers, Enemies (director + motion + hits) → Enemy / EnemyModel, Explosions, hdrColor
   world/         # ChaseCamera, Ground (leapfrogging grid tiles), Scenery (recycled instances)
   controls/      # Leva: useStarFoxControls
 ```
+
+Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape). Sibling order in `StarFoxScene` is update order. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
 
 Anything two lab scenes share lives outside both:
 
 | Where | What |
 |---|---|
-| `components/LabScene/` | `LabLighting`, `LabEffects` (bloom + flare), `TuningPanel` (Leva host) |
+| `components/LabScene/` | `LabLighting`, `LabEffects` (bloom + flare), `TuningPanel` (Leva host), `Nameplate` (DOM label under a body) |
 | `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/controls/footer) + `LabHudCard`, `LabHudHint` |
 | `hooks/useLabViewState` | URL-synced `theme` / view flags via `buildLabUrl` |
+| `hooks/useStore` + `utils/createStore` | minimal external store for render-loop → React state |
 | `utils/leva` | `slider`, `num` schema helpers |
+| `utils/collision`, `utils/waveLayout` | pure sphere tests; formation offsets + dealing projects into waves |
 
 ### Shared primitives
 
@@ -120,7 +126,7 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera tuning + page meta), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera/combat tuning + page meta), `starfoxWaves.ts` (wave table — counts sum to the project total so every project flies once), `index.ts` barrel. Import from `@data/lab`.
 
 `/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]` and `/lab/starfox` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
 
