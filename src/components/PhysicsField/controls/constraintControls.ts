@@ -2,7 +2,7 @@ import type { Schema } from "leva/dist/declarations/src/types";
 
 import type { FieldConstraint } from "@data/lab";
 
-import { num, slider } from "./schema";
+import { num, slider } from "@utils/leva";
 
 /** Default half-depth of the play volume when the constraint has no depth of its own. */
 const DEFAULT_DEPTH = 6;

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { RapierRigidBody } from "@react-three/rapier";
 
+import { LabEffects, LabLighting } from "@components/LabScene";
 import type { Project } from "@data/projects";
 import { layoutField } from "@utils/fieldLayout";
 
@@ -10,8 +11,6 @@ import { ProjectSphere } from "./bodies/ProjectSphere";
 import { Constraints } from "./constraints/Constraints";
 import { FieldContext, type BodyRegistry, type FieldInteraction, type FieldSettings } from "./fieldContext";
 import { useFieldBounds } from "./hooks/useFieldBounds";
-import { FieldEffects } from "./scene/FieldEffects";
-import { FieldLighting } from "./scene/FieldLighting";
 
 type FieldWorldProps = {
   projects: Project[];
@@ -55,7 +54,7 @@ export function FieldWorld({ projects, settings, seed, interaction }: FieldWorld
 
   return (
     <FieldContext.Provider value={context}>
-      <FieldLighting lighting={settings.lighting} />
+      <LabLighting lighting={settings.lighting} />
       <Constraints constraint={constraint} bounds={bounds} coreRef={coreRef} />
 
       <group key={`${seed}-${constraint.kind}`}>
@@ -69,7 +68,7 @@ export function FieldWorld({ projects, settings, seed, interaction }: FieldWorld
         ))}
       </group>
 
-      <FieldEffects lighting={settings.lighting} />
+      <LabEffects lighting={settings.lighting} />
     </FieldContext.Provider>
   );
 }

@@ -8,7 +8,7 @@ import { labLighting, type FieldViewOptions, type LabTheme, type LabVariant } fr
 import type { FieldSettings } from "../fieldContext";
 import { constraintDepth, constraintSchema, mergeConstraint } from "./constraintControls";
 import { applyLighting, lightingSchema } from "./lightingControls";
-import { slider } from "./schema";
+import { slider } from "@utils/leva";
 
 type UseFieldControlsArgs = {
   variant: LabVariant;

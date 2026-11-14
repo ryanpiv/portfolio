@@ -6,12 +6,12 @@ import * as THREE from "three";
 
 import type { LightingPreset } from "@data/lab";
 
-type FieldEffectsProps = {
+type LabEffectsProps = {
   lighting: LightingPreset;
 };
 
 /** Bloom on bright surfaces plus a lens flare anchored to the key light. */
-export function FieldEffects({ lighting }: FieldEffectsProps) {
+export function LabEffects({ lighting }: LabEffectsProps) {
   const { bloom, flare, key } = lighting;
   return (
     <EffectComposer multisampling={4}>

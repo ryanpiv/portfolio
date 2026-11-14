@@ -4,12 +4,12 @@ import { Stars } from "@react-three/drei";
 
 import type { LightingPreset } from "@data/lab";
 
-type FieldLightingProps = {
+type LabLightingProps = {
   lighting: LightingPreset;
 };
 
 /** Background, three-point lighting, and the optional starfield. */
-export function FieldLighting({ lighting }: FieldLightingProps) {
+export function LabLighting({ lighting }: LabLightingProps) {
   return (
     <>
       <color attach="background" args={[lighting.background]} />

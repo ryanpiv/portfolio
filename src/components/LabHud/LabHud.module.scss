@@ -1,0 +1,98 @@
+@use "../../styles" as *;
+
+// The HUD floats over a WebGL canvas. Everything is pointer-events: none
+// except the switches and controls, so drags pass through to the scene.
+// Children (PillGroup, StatusLegend, cards) read the --hud-* properties.
+
+.labHud {
+  --hud-ink: #{$color-ink};
+  --hud-muted: #{$color-ink-muted};
+  --hud-surface: rgba(12, 12, 14, 0.62);
+  --hud-border: #{$color-border};
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(#{$header-height} + #{$space-4}) $space-5 $space-5;
+  color: var(--hud-ink);
+  pointer-events: none;
+}
+
+.labHud--light {
+  --hud-ink: #0c0c0e;
+  --hud-muted: #5a5a64;
+  --hud-surface: rgba(242, 242, 240, 0.72);
+  --hud-border: rgba(12, 12, 14, 0.14);
+}
+
+.labHud__top,
+.labHud__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $space-4;
+  flex-wrap: wrap;
+}
+
+.labHud__bottom {
+  align-items: flex-end;
+}
+
+.labHud__eyebrow {
+  @include mono-label(0.6875rem, 0.14em);
+  margin: 0 0 $space-2;
+  color: var(--hud-muted);
+}
+
+.labHud__title {
+  @include display-title(1.6rem, 2.2rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.labHud__tagline {
+  margin: $space-2 0 0;
+  color: var(--hud-muted);
+  font-size: 0.95rem;
+}
+
+.labHud__switches {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-2;
+  pointer-events: auto;
+}
+
+// Flows under the switches so it never overlaps them, whatever their count.
+.labHud__controls {
+  width: 18rem;
+  max-height: 50vh;
+  margin-top: $space-2;
+  overflow: auto;
+  border-radius: $radius-md;
+}
+
+.labHud__card {
+  max-width: 22rem;
+  min-height: 3rem;
+  padding: $space-3 $space-4;
+  border: 1px solid var(--hud-border);
+  border-radius: $radius-md;
+  background: var(--hud-surface);
+  backdrop-filter: blur(8px);
+}
+
+.labHud__hint {
+  @include mono-label(0.6875rem, 0.04em);
+  margin: $space-2 0 0;
+  text-transform: none;
+  color: var(--hud-muted);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}

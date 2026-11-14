@@ -9,8 +9,8 @@ import { labVariants, type FieldViewOptions, type LabTheme, type LabVariant } fr
 import type { Project } from "@data/projects";
 import { cx } from "@utils/cx";
 
-import { TuningPanel } from "./controls/TuningPanel";
-import { useLabViewState } from "./hooks/useLabViewState";
+import { TuningPanel } from "@components/LabScene";
+import { useLabViewState } from "@hooks/useLabViewState";
 import styles from "./PhysicsField.module.scss";
 
 const PhysicsFieldScene = dynamic(() => import("./PhysicsFieldScene"), {

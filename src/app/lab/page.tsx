@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHeader } from "@components/PageHeader";
-import { LAB_THEMES, labVariants } from "@data/lab";
+import { LAB_THEMES, labVariants, starFoxMeta } from "@data/lab";
 import { buildLabUrl, defaultLabQuery } from "@utils/labUrl";
 
 import styles from "./lab.module.scss";
@@ -10,33 +10,39 @@ import styles from "./lab.module.scss";
 export const metadata: Metadata = {
   title: "Lab",
   description:
-    "Experimental WebGL views of the project registry — spheres with physics, drag and fling, lens flare.",
+    "Experimental WebGL views of the project registry — spheres with physics, drag and fling, lens flare — and a tiny rail shooter.",
 };
 
 const THEME_LABELS = { dark: "Dark →", light: "Light →" } as const;
+
+/** Every lab experience gets the same card; variants and the game differ only in route. */
+const experiments = [
+  ...labVariants.map(({ id, title, tagline, description }) => ({ id, title, tagline, description })),
+  starFoxMeta,
+];
 
 export default function LabPage() {
   return (
     <main className={styles.lab}>
       <PageHeader
         eyebrow="Lab"
-        title="Physics field"
-        lede="The project registry rendered as spheres in a 3D volume: collisions, drag and fling, hover to slow, click to open. Three ways of keeping them on screen, each in a dark and a light lighting preset. A proof-of-concept; the homepage grid is unchanged."
+        title="Experiments"
+        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a short Star Fox-style rail shooter in progress. Each has a dark and a light lighting preset. Proofs of concept; the homepage grid is unchanged."
       />
 
       <ul className={styles.lab__list}>
-        {labVariants.map((variant) => (
-          <li key={variant.id} className={styles.lab__item}>
+        {experiments.map((item) => (
+          <li key={item.id} className={styles.lab__item}>
             <div>
-              <h2 className={styles.lab__itemTitle}>{variant.title}</h2>
-              <p className={styles.lab__itemTagline}>{variant.tagline}</p>
-              <p className={styles.lab__itemDescription}>{variant.description}</p>
+              <h2 className={styles.lab__itemTitle}>{item.title}</h2>
+              <p className={styles.lab__itemTagline}>{item.tagline}</p>
+              <p className={styles.lab__itemDescription}>{item.description}</p>
             </div>
             <div className={styles.lab__links}>
               {LAB_THEMES.map((theme) => (
                 <Link
                   key={theme}
-                  href={buildLabUrl(variant.id, { ...defaultLabQuery, theme })}
+                  href={buildLabUrl(item.id, { ...defaultLabQuery, theme })}
                   className={styles.lab__link}
                 >
                   {THEME_LABELS[theme]}

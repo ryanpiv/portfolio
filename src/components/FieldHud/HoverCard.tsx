@@ -1,3 +1,4 @@
+import { LabHudCard, LabHudHint } from "@components/LabHud";
 import { StatusBadge } from "@components/StatusBadge";
 import type { Project } from "@data/projects";
 
@@ -15,20 +16,20 @@ const DRAG_HINT = "release to fling";
 /** Bottom-left card: the hovered project, or usage hints when idle. */
 export function HoverCard({ project, dragging }: HoverCardProps) {
   return (
-    <div className={styles.fieldHud__card} aria-live="polite">
+    <LabHudCard live>
       {project ? (
         <>
-          <div className={styles.fieldHud__cardMeta}>
+          <div className={styles.hoverCard__meta}>
             <StatusBadge status={project.status} />
-            <span className={styles.fieldHud__year}>{project.year}</span>
+            <span className={styles.hoverCard__year}>{project.year}</span>
           </div>
-          <p className={styles.fieldHud__cardTitle}>{project.title}</p>
-          <p className={styles.fieldHud__cardDescription}>{project.description}</p>
-          <p className={styles.fieldHud__hint}>{dragging ? DRAG_HINT : HOVER_HINT}</p>
+          <p className={styles.hoverCard__title}>{project.title}</p>
+          <p className={styles.hoverCard__description}>{project.description}</p>
+          <LabHudHint>{dragging ? DRAG_HINT : HOVER_HINT}</LabHudHint>
         </>
       ) : (
-        <p className={styles.fieldHud__hint}>{IDLE_HINT}</p>
+        <LabHudHint>{IDLE_HINT}</LabHudHint>
       )}
-    </div>
+    </LabHudCard>
   );
 }

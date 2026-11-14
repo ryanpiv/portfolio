@@ -2,7 +2,7 @@ import { folder } from "leva";
 
 import type { LightingPreset } from "@data/lab";
 
-import { slider } from "./schema";
+import { slider } from "@utils/leva";
 
 /** Leva schema seeded from a lighting preset. */
 export function lightingSchema(preset: LightingPreset) {

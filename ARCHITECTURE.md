@@ -61,12 +61,27 @@ Larger components group internals by role:
 ```text
 PhysicsField/
   index.ts, PhysicsField.tsx, PhysicsFieldScene.tsx, FieldWorld.tsx, fieldContext.ts
-  hooks/         # useLabViewState (URL-synced theme/view), useFieldBounds
+  hooks/         # useFieldBounds
   bodies/        # ProjectSphere + its hooks (usePointerDrag, useBodyMotion), StarHalo, Nameplate
   constraints/   # Constraints switch, Cage, Core, TetherLines, Tether, Attractor
-  scene/         # FieldLighting, FieldEffects
-  controls/      # Leva: useFieldControls + schema builders, TuningPanel
+  controls/      # Leva: useFieldControls + per-folder schema builders
+
+StarFox/
+  index.ts, StarFox.tsx, StarFoxScene.tsx, StarFoxHud.tsx, gameContext.ts
+  hooks/         # useInput (keyboard + pointer → ref)
+  entities/      # Ship (steering/banking), ShipModel (primitives)
+  world/         # ChaseCamera, Ground (leapfrogging grid tiles), Scenery (recycled instances)
+  controls/      # Leva: useStarFoxControls
 ```
+
+Anything two lab scenes share lives outside both:
+
+| Where | What |
+|---|---|
+| `components/LabScene/` | `LabLighting`, `LabEffects` (bloom + flare), `TuningPanel` (Leva host) |
+| `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/controls/footer) + `LabHudCard`, `LabHudHint` |
+| `hooks/useLabViewState` | URL-synced `theme` / view flags via `buildLabUrl` |
+| `utils/leva` | `slider`, `num` schema helpers |
 
 ### Shared primitives
 
@@ -105,9 +120,9 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera tuning + page meta), `index.ts` barrel. Import from `@data/lab`.
 
-`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]` reads `?theme=&names=&lines=` via `parseLabQuery` and writes them back with `buildLabUrl`.
+`/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]` and `/lab/starfox` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
 
 ## Testing
 

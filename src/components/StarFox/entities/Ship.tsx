@@ -1,0 +1,54 @@
+"use client";
+
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+
+import { useGame } from "../gameContext";
+import { ShipModel } from "./ShipModel";
+
+/** Smoothing rate for roll/pitch (1/s). */
+const ATTITUDE_LAMBDA = 10;
+
+const targetVel = new THREE.Vector2();
+
+/** The player: steers inside a box in the view plane, banks into turns. */
+export function Ship() {
+  const { config, lighting, shipRef, input } = useGame();
+  const velocity = useRef(new THREE.Vector2());
+  const { ship } = config;
+
+  useFrame((_, delta) => {
+    const group = shipRef.current;
+    if (!group) return;
+
+    const { x, y } = input.current;
+    targetVel.set(x, y).multiplyScalar(ship.speed);
+    velocity.current.lerp(targetVel, 1 - Math.exp(-ship.responsiveness * delta));
+
+    const minY = ship.altitude - ship.halfHeight;
+    const maxY = ship.altitude + ship.halfHeight;
+    const nextX = group.position.x + velocity.current.x * delta;
+    const nextY = group.position.y + velocity.current.y * delta;
+    group.position.x = THREE.MathUtils.clamp(nextX, -ship.halfWidth, ship.halfWidth);
+    group.position.y = THREE.MathUtils.clamp(nextY, minY, maxY);
+    // Kill velocity into a wall so the ship doesn't stay banked against it.
+    if (group.position.x !== nextX) velocity.current.x = 0;
+    if (group.position.y !== nextY) velocity.current.y = 0;
+
+    const nx = velocity.current.x / ship.speed;
+    const ny = velocity.current.y / ship.speed;
+    group.rotation.z = THREE.MathUtils.damp(group.rotation.z, -nx * ship.bank, ATTITUDE_LAMBDA, delta);
+    group.rotation.x = THREE.MathUtils.damp(group.rotation.x, ny * ship.pitch, ATTITUDE_LAMBDA, delta);
+  });
+
+  return (
+    <group ref={shipRef} position={[0, ship.altitude, 0]}>
+      <ShipModel
+        color={lighting.core.color}
+        accent={lighting.statusColors.live}
+        glow={lighting.statusColors.showcase}
+      />
+    </group>
+  );
+}
