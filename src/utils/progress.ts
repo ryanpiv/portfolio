@@ -38,7 +38,7 @@ export const emptyProgress: ProgressState = {
 };
 
 /** Numeric view of a stat (explored projects count as their length). */
-export function statValue(stats: ProgressStats, key: ProgressStatKey): number {
+function statValue(stats: ProgressStats, key: ProgressStatKey): number {
   return key === "projectsExplored" ? stats.projectsExplored.length : stats[key];
 }
 

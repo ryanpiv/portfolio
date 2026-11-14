@@ -35,7 +35,7 @@ export type RoamState = {
 
 export type RoamStore = Store<RoamState>;
 
-export function initialRoamState(healthMax: number): RoamState {
+function initialRoamState(healthMax: number): RoamState {
   return {
     score: 0,
     kills: 0,

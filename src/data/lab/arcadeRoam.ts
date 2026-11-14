@@ -86,6 +86,36 @@ export type RoamConfig = {
     /** Health per unit of tower height; plasma chews through it. */
     healthPerMetre: number;
   };
+  /** The wandering fighters: harmless until spooked, then they run and shoot back. */
+  roamers: {
+    /** Altitude band they cruise in, above the towers. */
+    minAltitude: number;
+    maxAltitude: number;
+    cruiseSpeed: number;
+    scatterSpeed: number;
+    /** Yaw rates, rad / s. */
+    cruiseTurn: number;
+    scatterTurn: number;
+    /** Within this of a waypoint counts as arrived. */
+    waypointReach: number;
+    /** The ship this close, or a bolt this close, spooks a roamer. */
+    scareDistance: number;
+    boltScareDistance: number;
+    /** How long a spooked roamer keeps running. */
+    alarmSeconds: number;
+    /** Spooked roamers shoot back while the ship is within this range. */
+    fireRange: number;
+    /** Head start before a freshly spooked roamer opens fire. */
+    firstShotDelay: number;
+    /** Downtime between a kill and the fighter re-entering. */
+    respawnDelay: number;
+    /** Fresh spawns and scatter targets land in this fraction of the arena. */
+    playFraction: number;
+    /** How far a scatter waypoint is pushed away from the threat. */
+    scatterDistance: number;
+    /** Respawns appear at least this far from the ship. */
+    respawnMinDistance: number;
+  };
   pickups: {
     count: number;
     /** Seconds before a collected pickup reappears elsewhere. */
@@ -147,6 +177,24 @@ export const roamConfig: RoamConfig = {
   },
   towers: {
     healthPerMetre: 10,
+  },
+  roamers: {
+    minAltitude: 22,
+    maxAltitude: 58,
+    cruiseSpeed: 14,
+    scatterSpeed: 34,
+    cruiseTurn: 1.2,
+    scatterTurn: 2.6,
+    waypointReach: 10,
+    scareDistance: 32,
+    boltScareDistance: 8,
+    alarmSeconds: 3,
+    fireRange: 120,
+    firstShotDelay: 0.6,
+    respawnDelay: 4,
+    playFraction: 0.85,
+    scatterDistance: 70,
+    respawnMinDistance: 90,
   },
   pickups: {
     count: 6,

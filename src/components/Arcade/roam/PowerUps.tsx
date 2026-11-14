@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
 
 import { Nameplate } from "@components/LabScene";
 import { powerUps, weapons, type PowerUpSpec } from "@data/lab";
@@ -12,6 +11,7 @@ import { recordStat } from "@utils/progressStore";
 
 import { hdrColor } from "../combat/hdrColor";
 import { useGameFrame } from "../hooks/useGameFrame";
+import { useGroupRegistry, type RegisterGroup } from "../hooks/useGroupRegistry";
 import { aliveBoxes } from "./arenaState";
 import { useRoam } from "./roamContext";
 import { addScore, equipWeapon, repairHull } from "./roamStore";
@@ -60,12 +60,7 @@ export function PowerUps() {
   const [pickups, setPickups] = useState<Pickup[]>([]);
   /** Slot index → seconds until it refills. */
   const pending = useRef(new Map<number, number>());
-  const groups = useRef(new Map<string, THREE.Group>());
-
-  const register = useCallback((id: string, group: THREE.Group | null) => {
-    if (group) groups.current.set(id, group);
-    else groups.current.delete(id);
-  }, []);
+  const { groups, register } = useGroupRegistry();
 
   useGameFrame(({ clock }, delta) => {
     const ship = shipRef.current;
@@ -136,7 +131,7 @@ export function PowerUps() {
 
 type PickupModelProps = {
   pickup: Pickup;
-  register: (id: string, group: THREE.Group | null) => void;
+  register: RegisterGroup;
 };
 
 /** A spinning ring with a glowing core, labelled with what it gives you. */

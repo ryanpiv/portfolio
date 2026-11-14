@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import type { RadarFrame, RadarRef } from "./radarFrame";
 import styles from "./Radar.module.scss";
 
-export const RADAR_SIZE = 112;
+const RADAR_SIZE = 112;
 const BLIP_RADIUS = 2.5;
 const SHIP_SIZE = 5;
 const RING_COUNT = 2;

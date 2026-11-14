@@ -7,7 +7,7 @@ import { useFrame, type RootState } from "@react-three/fiber";
  * hidden, shader compile) the clock hands over seconds at once; stepping by
  * that would teleport everything, so we drop the excess time instead.
  */
-export const MAX_FRAME_DELTA = 0.1;
+const MAX_FRAME_DELTA = 0.1;
 
 export type GameFrameCallback = (state: RootState, delta: number) => void;
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import type * as THREE from "three";
+import { useMemo, useRef, useState } from "react";
 
 import { railWaveTiming, railWaves, type WaveSpec } from "@data/lab";
 import { projects } from "@data/projects";
@@ -17,6 +16,7 @@ import { applyDamage, isRunLive, recordEscape, recordHit, type GamePhase } from 
 import type { Laser } from "../game/sim";
 import { createDirector, stepDirector, type DirectorPhase } from "./waveDirector";
 import { useGameFrame } from "../hooks/useGameFrame";
+import { useGroupRegistry } from "../hooks/useGroupRegistry";
 import { Enemy, type EnemySpawn } from "./Enemy";
 
 /** An enemy has escaped once it is this far behind the camera. */
@@ -50,12 +50,7 @@ export function Enemies() {
   const director = useRef(createDirector());
   const wave = useRef<WaveSpec | null>(null);
   const motion = useRef(new Map<string, EnemyMotion>());
-  const groups = useRef(new Map<string, THREE.Group>());
-
-  const register = useCallback((id: string, group: THREE.Group | null) => {
-    if (group) groups.current.set(id, group);
-    else groups.current.delete(id);
-  }, []);
+  const { groups, register } = useGroupRegistry();
 
   useGameFrame(({ camera, clock }, delta) => {
     const ship = shipRef.current;

@@ -1,6 +1,5 @@
 "use client";
 
-import type * as THREE from "three";
 
 import { Nameplate } from "@components/LabScene";
 import type { Project } from "@data/projects";
@@ -8,6 +7,7 @@ import type { Vec3 } from "@utils/fieldLayout";
 
 import { useRail } from "./railContext";
 import { EnemyModel } from "../entities/EnemyModel";
+import type { RegisterGroup } from "../hooks/useGroupRegistry";
 
 export type EnemySpawn = {
   id: string;
@@ -23,7 +23,7 @@ export type EnemySpawn = {
 type EnemyProps = {
   spawn: EnemySpawn;
   /** Called with the group on mount and `null` on unmount. */
-  register: (id: string, group: THREE.Group | null) => void;
+  register: RegisterGroup;
 };
 
 /** Model scale; the hit sphere is `config.combat.enemyRadius`, independent of this. */

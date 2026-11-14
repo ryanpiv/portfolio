@@ -4,11 +4,6 @@ export type GithubRepoMeta = {
   stars: number | null;
 };
 
-export type EnrichedProjectMeta = GithubRepoMeta & {
-  owner: string;
-  name: string;
-};
-
 const GITHUB_REPO_RE =
   /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i;
 
@@ -81,14 +76,4 @@ export async function fetchGithubMetaBySlug(
     items.map(async ({ slug, repo }) => [slug, await fetchGithubRepoMeta(repo, fetchImpl)] as const),
   );
   return Object.fromEntries(entries);
-}
-
-export async function enrichProjectRepo(
-  repoUrl: string,
-  fetchImpl: typeof fetch = fetch,
-): Promise<EnrichedProjectMeta | null> {
-  const parsed = parseGithubRepoUrl(repoUrl);
-  if (!parsed) return null;
-  const meta = await fetchGithubRepoMeta(repoUrl, fetchImpl);
-  return { ...parsed, ...meta };
 }

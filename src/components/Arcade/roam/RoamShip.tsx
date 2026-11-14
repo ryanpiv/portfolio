@@ -5,7 +5,6 @@ import * as THREE from "three";
 
 import { weapons } from "@data/lab";
 import { findClearPoint, respawnYaw } from "@utils/arenaSpawn";
-import { resolveSphereAabb } from "@utils/collision";
 import type { Vec3 } from "@utils/fieldLayout";
 import { recordStat } from "@utils/progressStore";
 
@@ -16,6 +15,7 @@ import { useGameFrame } from "../hooks/useGameFrame";
 import { aliveBoxes } from "./arenaState";
 import { useRoam } from "./roamContext";
 import { damageHull, respawn as respawnStore, startArrival } from "./roamStore";
+import { collisionDamage, slideAlongTowers } from "./shipCollision";
 
 /** Smoothing rate for the visual bank (1/s). */
 const BANK_LAMBDA = 8;
@@ -29,6 +29,8 @@ const DEATH_BURST_SIZE = 3;
 const BLINK_HZ = 8;
 /** How far past a portal ring an arriving ship appears. */
 const ARRIVAL_OFFSET = 10;
+/** Sparks from scraping a tower, relative to a fighter's burst. */
+const SCRAPE_BURST_SIZE = 0.6;
 
 const FORWARD = new THREE.Vector3(0, 0, -1);
 const forward = new THREE.Vector3();
@@ -155,32 +157,12 @@ export function RoamShip() {
     immune.current = Math.max(0, immune.current - delta);
     grace.current = Math.max(0, grace.current - delta);
     const center: Vec3 = [group.position.x, group.position.y, group.position.z];
-    let severity = 0;
-    for (const tower of arenaRef.current.towers) {
-      if (!tower.alive) continue;
-      const pushed = resolveSphereAabb(center, combat.shipRadius, tower.box);
-      if (!pushed) continue;
-      // Push-out direction is the wall normal; how much of our heading pointed into it is the severity.
-      const nx = pushed[0] - center[0];
-      const ny = pushed[1] - center[1];
-      const nz = pushed[2] - center[2];
-      const n = Math.hypot(nx, ny, nz) || 1;
-      severity = Math.max(severity, -(forward.x * nx + forward.y * ny + forward.z * nz) / n);
-      center[0] = pushed[0];
-      center[1] = pushed[1];
-      center[2] = pushed[2];
-    }
+    const severity = slideAlongTowers(center, combat.shipRadius, aliveBoxes(arenaRef.current), [forward.x, forward.y, forward.z]);
     group.position.set(center[0], center[1], center[2]);
     if (severity > 0 && live && immune.current === 0 && grace.current === 0) {
-      const damage =
-        severity >= collision.fatalAbove
-          ? Infinity
-          : severity >= collision.heavyAbove
-            ? collision.heavyDamage
-            : collision.lightDamage;
       grace.current = collision.grace;
-      simRef.current.bursts.push({ position: [...center], color: lighting.statusColors["in-progress"], size: 0.6 });
-      damageHull(store, damage);
+      simRef.current.bursts.push({ position: [...center], color: lighting.statusColors["in-progress"], size: SCRAPE_BURST_SIZE });
+      damageHull(store, collisionDamage(severity, collision));
     }
 
     // Pose: aim first, then bank and roll about the ship's own nose.
