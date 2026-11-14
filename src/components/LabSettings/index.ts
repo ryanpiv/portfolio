@@ -1,2 +1,2 @@
 export { LabSettingsMenu } from "./LabSettingsMenu";
-export { SettingsSection, SettingsToggle } from "./SettingsControls";
+export { SettingsSection } from "./SettingsControls";

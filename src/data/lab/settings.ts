@@ -60,7 +60,7 @@ const EVERYWHERE: readonly LabScope[] = ["field", "rail", "roam"];
 const ARCADE: readonly LabScope[] = ["rail", "roam"];
 
 /** Boolean effect toggles, in menu order, with the scenes they apply to. */
-export const EFFECT_TOGGLES: readonly EffectToggle[] = [
+const EFFECT_TOGGLES: readonly EffectToggle[] = [
   { key: "bloom", label: "Bloom", hint: "glow on bright surfaces", scopes: EVERYWHERE },
   { key: "flare", label: "Lens flare", hint: "streaks off the key light", scopes: EVERYWHERE },
   { key: "dynamicLights", label: "Dynamic lights", hint: "headlight, muzzle and blast flashes", scopes: ARCADE },
@@ -71,7 +71,7 @@ export const EFFECT_TOGGLES: readonly EffectToggle[] = [
 export const effectTogglesFor = (scope: LabScope): EffectToggle[] =>
   EFFECT_TOGGLES.filter((toggle) => toggle.scopes.includes(scope));
 
-export function isFoliageDensity(value: unknown): value is FoliageDensity {
+function isFoliageDensity(value: unknown): value is FoliageDensity {
   return (FOLIAGE_DENSITIES as readonly unknown[]).includes(value);
 }
 

@@ -68,25 +68,29 @@ PhysicsField/
 
 Arcade/
   index.ts, ArcadeRail.tsx (rail entry), ArcadeRoam.tsx (free-roam entry) — both render a LabStage
-  ArcadeHud.tsx            # shooter-style HUD: gauge top centre, tracker bottom left, weapon + readout bottom right,
-                           # callouts centre, corner brackets; theme / quality / mode switches; Leva behind a "tuning" toggle
+  ArcadeHud.tsx            # minimal HUD: mode word + gauge + gear top, tracker / fading hint / weapon + a number or two
+                           # bottom, callouts centre; mode nav, achievements and Leva live inside the LabSettingsMenu
   SceneFrame.tsx            # LabCanvas + lighting + fog + effects shared by both modes
   ShieldBar.tsx             # shared gauge (rail "shield", roam "hull")
-  gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, weaponRef, progress, isLive, damageShip
+  gameContext.ts            # GameContext: lighting, effects, combat, shipRef, inputRef, simRef, weaponRef, progress, isLive, damageShip
   hooks/         # useInput (keys + pointer → ref; boost/brake, Q/E + double-tap roll; ignores presses on HUD controls),
                  # useGameFrame, useAfterFirstFrame, useGroupRegistry (id → mounted Group map for entity lists)
-  game/          # sim (per-frame bus: lasers, shots, bursts), fireShot (enemy bolt toward the ship), barrelRoll, steering
+  game/          # sim (per-frame bus: lasers, shots, bursts, flashes), fireShot (enemy bolt toward the ship), barrelRoll, steering
   entities/      # ShipModel, EnemyModel (primitives), useBarrelRoll (roll request → angle, marks userData.rolling)
-  combat/        # Lasers (fires weaponRef's bolts along ship.userData.aim), EnemyShots (deflect while rolling / immune,
-                 # else damageShip), Explosions, hdrColor — mode-agnostic
+  combat/        # Lasers (fires weaponRef's bolts along ship.userData.aim; additive glow sheath + muzzle flash),
+                 # EnemyShots (deflect while rolling / immune, else damageShip), Explosions (layered pools fed by
+                 # sim.bursts: sparks, flash, shockwave ring, smoke, falling rubble), FlashLights (pool of real point
+                 # lights fed by sim.flashes), hdrColor — mode-agnostic
   controls/      # Leva: useCombatControls (shared "Combat" folder), useRailControls (rail)
-  progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsPanel
+  progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsList (menu section)
   rail/          # RailScene, GameRun, railContext (useRail = game + config + store), Ship, ChaseCamera, Ground, Scenery,
                  # Enemies → Enemy, gameStore, waveDirector, buildWave, MissionScreen, WaveCallout, WaveTracker
   roam/          # RoamScene, RoamRun, roamContext (useRoam = game + config + store + layout + arenaRef + radarRef),
                  # RoamShip (all-range flight; tower hits graded by how head-on: fatal / heavy / light; death → wreck
                  # timer → respawn at a clear point with immunity blink; emerges from the return portal), RoamCamera,
-                 # Arena (grid + instanced towers; heavy bolts chip towers, collapse at 0) + arenaState, Portals → Portal,
+                 # Arena (ground + grid, parks, instanced trees, instanced towers with a procedural facade from
+                 # towerMaterial — lit windows, floor bands, per-instance damage; heavy bolts chip towers, which
+                 # pancake and scatter rubble at 0) + arenaState, ShipLight (headlight), Portals → Portal,
                  # Roamers (objects + sim glue) ← roamerBrain (pure wander / scatter / return-fire rules, tuned by
                  # roamConfig.roamers), shipCollision (pure tower slide + damage curve), PowerUps (weapon + repair
                  # pickups, refill on a timer), roamStore (score, hull, weapon, phase, arrival), radarFrame + Radar
@@ -99,7 +103,9 @@ Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only 
 
 Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll), `userData.rolling`, and `userData.immune`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Weapons are data (`data/lab/arcadeWeapons`): `weaponRef` holds the current spec, `Lasers` arms each bolt with its damage / size / `heavy` flag, and whoever a bolt hits decides what that means (fighters lose HP, only heavy bolts hurt towers). Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
 
-Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.arcade.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and panel from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
+Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.arcade.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and the settings menu's achievements list from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
+
+Visitor settings (`data/lab/settings` + `hooks/useLabSettings`) are one `lab.settings` record in `localStorage`: optional theme and quality overrides plus the effect toggles (bloom, flare, dynamic lights, lit windows, foliage density, trails & shockwaves). `useLabViewState` resolves theme and quality as URL → remembered → system / device suggestion, and `effects` ride on `GameContext` so every system (`LabEffects`, `FlashLights`, `ShipLight`, `Arena`, `Lasers`, `Explosions`) can skip what is off. `utils/persistedStore.hydrateStore` is the shared "mirror a store to a storage key" helper that both settings and progress use.
 
 Free roam is a project explorer first, so dying is cheap: hull hits zero → short wreck pause → `utils/arenaSpawn` finds open air near where you were (and a heading that isn't into a wall) → five seconds of blinking immunity. Flying into a portal stores its slug in `sessionStorage` (`roam/returnPortal`) before `router.push`; when the page mounts again (back button) the store's `spawnPortal` is set and `RoamShip` places the ship just outside that ring, nose toward the center, under a reverse "back from" wash.
 
@@ -109,9 +115,10 @@ Anything two lab scenes share lives outside both:
 |---|---|
 | `components/LabScene/` | R3F side: `LabCanvas` (the one `<Canvas>`; spends what the quality tier allows, `PerformanceMonitor` steps down on frame drops), `LabLighting`, `LabEffects` (bloom + flare; skipped on tiers without effects), `TuningPanel` (Leva host), `Nameplate` (DOM label under a body) |
 | `components/LabStage/` | DOM side: `LabStage` (fixed full-viewport stage; renders `SceneFallback` instead of the scene when the device has no WebGL), `SceneLoading` |
-| `components/LabSwitches/` | `ThemeSwitch`, `QualitySwitch` pill groups used by both HUDs |
-| `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/controls/footer) + `LabHudCard`, `LabHudHint` — the physics field's HUD |
-| `hooks/useLabViewState` | URL-synced `theme` / `quality` / view flags via `buildLabUrl`; quality defaults from the device probe until picked, `degradeQuality` steps it down |
+| `components/LabSettings/` | `LabSettingsMenu` — the gear in the top-right corner of every lab scene: Display (theme, quality), Effects (per-scope toggles via `effectTogglesFor`), page-supplied sections (mode / variant nav, view switches, achievements), Developer (Leva host behind a "tuning panel" switch); `SettingsSection`, `SettingsToggle` |
+| `components/LabHud/` | `LabHud` overlay shell (eyebrow/title/switches/footer) + `LabHudCard`, `LabHudHint` — the physics field's HUD |
+| `hooks/useLabViewState` | resolves `theme` / `quality` / view flags as URL → remembered (`useLabSettings`) → system / device suggestion, writes picks back to both; `degradeQuality` steps it down |
+| `hooks/useLabSettings` + `utils/persistedStore` | the remembered `lab.settings` store (theme / quality overrides + effect toggles) and the generic store ↔ localStorage mirror |
 | `hooks/useDeviceCapability` + `utils/deviceCapability` | one-shot probe: WebGL, touch-only, reduced motion, low-power → `suggestQuality`, `classicReasons` |
 | `hooks/useStore` + `utils/createStore` | minimal external store for render-loop → React state |
 | `utils/leva` | `slider`, `num` schema helpers |
@@ -157,7 +164,7 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Optional writeups** (`src/content/projects/{slug}.mdx`): add only when a project has a story. Register the loader in `src/utils/getProjectPage.ts`.
 
-**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `quality.ts` (render tiers low / balanced / high: DPR, shadows, effects), `view.ts` (visitor options + guards), `arcadeRail.ts` (ship/world/camera/combat/scoring tuning + page meta), `arcadeWaves.ts` (wave table — counts sum to the project total so every project flies once), `arcadeRoam.ts` (flight/arena/camera/scoring/hull/collision/roamers/pickups tuning + page meta), `arcadeWeapons.ts` (weapon + power-up tables), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
+**Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `quality.ts` (render tiers low / balanced / high: DPR, shadows, effects), `settings.ts` (remembered settings: effect toggles with the scenes they apply to, `parseLabSettings`), `view.ts` (visitor options + guards), `arcadeRail.ts` (ship/world/camera/combat/scoring tuning + page meta), `arcadeWaves.ts` (wave table — counts sum to the project total so every project flies once), `arcadeRoam.ts` (flight/arena/world palette/camera/scoring/hull/collision/roamers/pickups tuning + page meta), `arcadeWeapons.ts` (weapon + power-up tables), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
 
 `/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two `SlantStage` panels, one into `/lab/arcade/roam` and one into `/projects`. The hover mechanic is pure CSS; the only client state is the device probe, which marks Classic "recommended" (and says why) when the device has no WebGL, is touch-only, low-power, or prefers reduced motion. Below `$bp-md` the shear is dropped and the call to action is always visible.
 
