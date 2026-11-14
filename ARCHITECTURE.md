@@ -70,28 +70,34 @@ StarFox/
   index.ts, StarFox.tsx (rail entry), StarFoxRoam.tsx (free-roam entry)
   StarFoxHud.tsx            # shared DOM chrome: theme + mode switches, readout, achievements; mode-specific slots
   SceneFrame.tsx            # Canvas + lighting + fog + effects shared by both modes
-  gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, progress, isLive
+  ShieldBar.tsx             # shared gauge (rail "shield", roam "hull")
+  gameContext.ts            # GameContext: lighting, combat, shipRef, inputRef, simRef, weaponRef, progress, isLive, damageShip
   hooks/         # useInput (keys + pointer → ref; boost/brake, Q/E + double-tap roll), useGameFrame, useAfterFirstFrame
-  game/          # sim (per-frame bus: lasers, shots, bursts), barrelRoll (timing + angle), steering (pure heading math)
+  game/          # sim (per-frame bus: lasers, shots, bursts), fireShot (enemy bolt toward the ship), barrelRoll, steering
   entities/      # ShipModel, EnemyModel (primitives), useBarrelRoll (roll request → angle, marks userData.rolling)
-  combat/        # Lasers (fires along ship.userData.aim), Explosions, hdrColor — mode-agnostic
+  combat/        # Lasers (fires weaponRef's bolts along ship.userData.aim), EnemyShots (deflect while rolling / immune,
+                 # else damageShip), Explosions, hdrColor — mode-agnostic
   controls/      # Leva: useCombatControls (shared "Combat" folder), useStarFoxControls (rail)
   progress/      # useProgress (singleton store + localStorage hydration), AchievementToast, AchievementsPanel
   rail/          # RailScene, GameRun, railContext (useRail = game + config + store), Ship, ChaseCamera, Ground, Scenery,
-                 # Enemies → Enemy, EnemyShots (deflected during a roll), gameStore, waveDirector, buildWave, fireShot,
-                 # MissionScreen, ShieldBar, WaveCallout
-  roam/          # RoamScene, RoamRun, roamContext (useRoam = game + config + store + layout + radarRef), RoamShip
-                 # (all-range: yaw/pitch/throttle, arena bounds, tower push-out), RoamCamera, Arena (grid + instanced
-                 # towers), Portals → Portal (ring per project; fly-through → enterPortal), Roamers (wander / scatter /
-                 # respawn), roamStore, radarFrame + Radar (DOM canvas), PortalTransition (takeover → router.push),
+                 # Enemies → Enemy, gameStore, waveDirector, buildWave, MissionScreen, WaveCallout
+  roam/          # RoamScene, RoamRun, roamContext (useRoam = game + config + store + layout + arenaRef + radarRef),
+                 # RoamShip (all-range flight; tower hits graded by how head-on: fatal / heavy / light; death → wreck
+                 # timer → respawn at a clear point with immunity blink; emerges from the return portal), RoamCamera,
+                 # Arena (grid + instanced towers; heavy bolts chip towers, collapse at 0) + arenaState, Portals → Portal,
+                 # Roamers (wander / scatter and fire back / respawn), PowerUps (weapon + repair pickups, refill on a
+                 # timer), roamStore (score, hull, weapon, phase, arrival), radarFrame + Radar (DOM canvas), RoamCallout,
+                 # PortalTransition (enter: takeover → router.push; arrive: reverse wash), returnPortal (sessionStorage),
                  # useRoamControls
 ```
 
 Game-loop rules: mutable per-frame state lives in refs named `*Ref` and is only touched inside `useGameFrame`; React state changes only on events (spawn, hit, escape, damage, portal). Sibling order in `GameRun` / `RoamRun` is update order. `GameRun` is everything that belongs to one attempt — "fly again" bumps its `key` and resets the store. The DOM HUD reads a `createStore` store via `useStore`, never the sim.
 
-Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll) and `userData.rolling`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
+Both modes share one ship contract: the ship group publishes its yaw/pitch attitude on `userData.aim` (a quaternion, no roll), `userData.rolling`, and `userData.immune`; `Lasers` fires along the aim and `RoamCamera` follows it, so a barrel roll never sprays shots or tilts the horizon. Weapons are data (`data/lab/starfoxWeapons`): `weaponRef` holds the current spec, `Lasers` arms each bolt with its damage / size / `heavy` flag, and whoever a bolt hits decides what that means (fighters lose HP, only heavy bolts hurt towers). Anything that needs the mode's own config/store uses `useRail()` / `useRoam()`, which spread the shared `useGame()` value.
 
 Progression (`utils/progress` + `utils/progressStore` + `data/lab/achievements`) is a pure stats → unlocks reducer persisted under `lab.starfox.progress`. Scenes call `recordStat` / `recordExplored` on events; both HUDs render the same toast and panel from the singleton store in `progress/useProgress`, so milestones carry across rail and free roam.
+
+Free roam is a project explorer first, so dying is cheap: hull hits zero → short wreck pause → `utils/arenaSpawn` finds open air near where you were (and a heading that isn't into a wall) → five seconds of blinking immunity. Flying into a portal stores its slug in `sessionStorage` (`roam/returnPortal`) before `router.push`; when the page mounts again (back button) the store's `spawnPortal` is set and `RoamShip` places the ship just outside that ring, nose toward the center, under a reverse "back from" wash.
 
 Anything two lab scenes share lives outside both:
 
@@ -102,7 +108,7 @@ Anything two lab scenes share lives outside both:
 | `hooks/useLabViewState` | URL-synced `theme` / view flags via `buildLabUrl` |
 | `hooks/useStore` + `utils/createStore` | minimal external store for render-loop → React state |
 | `utils/leva` | `slider`, `num` schema helpers |
-| `utils/collision`, `utils/waveLayout`, `utils/arenaLayout` | sphere / AABB / disc tests; formation offsets + dealing projects into waves; seeded towers + portal ring |
+| `utils/collision`, `utils/waveLayout`, `utils/arenaLayout`, `utils/arenaSpawn` | sphere / AABB / segment / disc tests; formation offsets + dealing projects into waves; seeded towers + portal ring; clear-point search + respawn heading |
 | `utils/progress`, `utils/progressStore` | achievement stats reducer; persisted store + `recordStat` / `recordExplored` |
 
 ### Shared primitives

@@ -13,7 +13,10 @@ export type ProgressStatKey =
   | "portalsFlown"
   | "projectsExplored"
   | "railRunsCompleted"
-  | "points";
+  | "points"
+  | "deaths"
+  | "damageDealt"
+  | "towersDestroyed";
 
 export type Achievement = {
   id: string;
@@ -36,4 +39,9 @@ export const achievements: readonly Achievement[] = [
   { id: "portal-hopper", title: "Portal Hopper", description: "Fly through ten portals.", stat: "portalsFlown", threshold: 10 },
   { id: "corneria-clear", title: "Corneria Clear", description: "Survive all four waves of the rail mission.", stat: "railRunsCompleted", threshold: 1 },
   { id: "high-score", title: "High Score", description: "Earn five thousand lifetime points.", stat: "points", threshold: 5000 },
+  { id: "crash-course", title: "Crash Course", description: "Lose the ship once. It comes back.", stat: "deaths", threshold: 1 },
+  { id: "bruiser", title: "Bruiser", description: "Deal a thousand damage.", stat: "damageDealt", threshold: 1000 },
+  { id: "heavy-hitter", title: "Heavy Hitter", description: "Deal ten thousand damage.", stat: "damageDealt", threshold: 10000 },
+  { id: "wrecking-ball", title: "Wrecking Ball", description: "Deal fifty thousand damage.", stat: "damageDealt", threshold: 50000 },
+  { id: "demolition", title: "Demolition", description: "Bring down a tower with the plasma cannon.", stat: "towersDestroyed", threshold: 1 },
 ];

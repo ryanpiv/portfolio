@@ -1,6 +1,6 @@
 @use "../../../styles" as *;
 
-// Portal takeover. Total length matches TRANSITION_MS in PortalTransition.tsx:
+// Portal takeover. Lengths match TRANSITION_MS / ARRIVAL_MS in PortalTransition.tsx:
 // the status color irises in from the center (0–45%), holds with the title
 // (45–75%), then washes to the page canvas (75–100%) so the project route
 // lands on a plain screen. --stage-canvas comes from the .starFox stage.
@@ -61,6 +61,39 @@ $takeover-ms: 1400ms;
     opacity: 1;
     transform: translateY(0);
   }
+  100% {
+    opacity: 0;
+  }
+}
+
+// Coming back: start fully covered in the portal color and iris out.
+$arrival-ms: 900ms;
+
+.takeover--arrive {
+  animation: iris-out $arrival-ms ease-in-out both;
+
+  .takeover__eyebrow,
+  .takeover__title {
+    animation: title-out $arrival-ms ease both;
+  }
+}
+
+@keyframes iris-out {
+  0%,
+  30% {
+    clip-path: circle(120% at 50% 50%);
+  }
+  100% {
+    clip-path: circle(0% at 50% 50%);
+  }
+}
+
+@keyframes title-out {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  70%,
   100% {
     opacity: 0;
   }

@@ -5,24 +5,26 @@ import styles from "./ShieldBar.module.scss";
 type ShieldBarProps = {
   shield: number;
   shieldMax: number;
+  /** Rail calls it a shield; free roam a hull. */
+  label?: string;
 };
 
 /** Fill turns amber under this fraction and purple under the critical one. */
 const WARN_BELOW = 0.6;
 const CRITICAL_BELOW = 0.3;
 
-export function ShieldBar({ shield, shieldMax }: ShieldBarProps) {
+export function ShieldBar({ shield, shieldMax, label = "shield" }: ShieldBarProps) {
   const fraction = shieldMax > 0 ? shield / shieldMax : 0;
   const percent = Math.round(fraction * 100);
   const tone = fraction < CRITICAL_BELOW ? "critical" : fraction < WARN_BELOW ? "warn" : null;
 
   return (
     <div className={styles.shield}>
-      <span className={styles.shield__label}>shield</span>
+      <span className={styles.shield__label}>{label}</span>
       <div
         className={styles.shield__track}
         role="meter"
-        aria-label="Shield"
+        aria-label={label}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}

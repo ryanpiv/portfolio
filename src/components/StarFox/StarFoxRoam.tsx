@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import { TuningPanel } from "@components/LabScene";
-import { STARFOX_ROAM_ID, starFoxRoamConfig, type LabTheme } from "@data/lab";
+import { STARFOX_ROAM_ID, starFoxRoamConfig, weapons, type LabTheme } from "@data/lab";
 import { projects } from "@data/projects";
 import { useLabViewState } from "@hooks/useLabViewState";
 import { useStore } from "@hooks/useStore";
@@ -16,7 +16,10 @@ import { useProgress } from "./progress";
 import { PortalTransition } from "./roam/PortalTransition";
 import { createRadarFrame } from "./roam/radarFrame";
 import { Radar } from "./roam/Radar";
-import { createRoamStore, type PortalTransition as Transition } from "./roam/roamStore";
+import { consumeReturnPortal, rememberReturnPortal } from "./roam/returnPortal";
+import { RoamCallout } from "./roam/RoamCallout";
+import { createRoamStore, finishArrival, setSpawnPortal, type PortalTransition as Transition } from "./roam/roamStore";
+import { ShieldBar } from "./ShieldBar";
 import styles from "./StarFox.module.scss";
 import { StarFoxHud } from "./StarFoxHud";
 
@@ -29,7 +32,7 @@ const RoamScene = dynamic(() => import("./roam/RoamScene"), {
 const RADAR_RANGE = starFoxRoamConfig.arena.radius * 0.6;
 
 const HINT =
-  "WASD / arrows to steer · shift boost · ctrl / X brake · space fires · double-tap A/D to barrel roll · fly through a ring to open its project";
+  "WASD / arrows to steer · shift boost · ctrl / X brake · space fires · double-tap A/D to barrel roll · rings open projects · grab pickups for weapons and repairs";
 
 /** Mirrors the LabHud --hud-ink / --hud-muted values so the radar canvas matches the chrome. */
 const RADAR_INK: Record<LabTheme, { ink: string; muted: string }> = {
@@ -47,15 +50,25 @@ export function StarFoxRoam({ initialTheme }: StarFoxRoamProps) {
   const { theme, setTheme } = useLabViewState({ variantId: STARFOX_ROAM_ID, initialTheme });
   const { input, bind } = useInput();
   const progress = useProgress();
-  const [store] = useState(createRoamStore);
+  const [store] = useState(() => createRoamStore(starFoxRoamConfig.hull.healthMax));
   const radarRef = useRef(createRadarFrame(RADAR_RANGE));
   const game = useStore(store);
   const explored = useStore(progress).stats.projectsExplored.length;
 
-  const onTransitionDone = useCallback(
-    (transition: Transition) => router.push(`/projects/${transition.slug}`),
+  // Back from a project: the ship should emerge from the portal it took.
+  useEffect(() => {
+    const slug = consumeReturnPortal();
+    if (slug) setSpawnPortal(store, slug);
+  }, [store]);
+
+  const onEntered = useCallback(
+    (transition: Transition) => {
+      rememberReturnPortal(transition.slug);
+      router.push(`/projects/${transition.slug}`);
+    },
     [router],
   );
+  const onArrived = useCallback(() => finishArrival(store), [store]);
 
   return (
     <div className={cx(styles.starFox, styles[`starFox--${theme}`])} {...bind}>
@@ -72,12 +85,20 @@ export function StarFoxRoam({ initialTheme }: StarFoxRoamProps) {
           { label: "kills", value: String(game.kills) },
           { label: "portals", value: String(game.portals) },
           { label: "explored", value: `${explored} / ${projects.length}` },
+          { label: "weapon", value: weapons[game.weapon].title },
         ]}
-        gauge={<Radar radarRef={radarRef} {...RADAR_INK[theme]} />}
+        gauge={
+          <>
+            <ShieldBar shield={game.health} shieldMax={game.healthMax} label="hull" />
+            <Radar radarRef={radarRef} {...RADAR_INK[theme]} />
+          </>
+        }
         hint={HINT}
+        center={game.phase === "dead" && <RoamCallout eyebrow="ship lost" title="Respawning…" />}
         controls={<TuningPanel />}
       />
-      <PortalTransition transition={game.transition} onDone={onTransitionDone} />
+      <PortalTransition transition={game.transition} onDone={onEntered} />
+      <PortalTransition transition={game.arrival} direction="arrive" onDone={onArrived} />
     </div>
   );
 }

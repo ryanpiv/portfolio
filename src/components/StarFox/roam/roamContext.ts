@@ -1,9 +1,10 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, type RefObject } from "react";
 
 import type { RoamConfig } from "@data/lab";
 import type { ArenaLayout } from "@utils/arenaLayout";
 
 import { useGame, type GameContextValue } from "../gameContext";
+import type { ArenaState } from "./arenaState";
 import type { RadarRef } from "./radarFrame";
 import type { RoamStore } from "./roamStore";
 
@@ -11,6 +12,8 @@ export type RoamContextValue = {
   config: RoamConfig;
   store: RoamStore;
   layout: ArenaLayout;
+  /** Towers' health and whether they still stand. */
+  arenaRef: RefObject<ArenaState>;
   radarRef: RadarRef;
 };
 

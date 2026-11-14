@@ -3,9 +3,10 @@
 import { useMemo, useRef } from "react";
 import type * as THREE from "three";
 
-import type { LightingPreset, StarFoxConfig } from "@data/lab";
+import { weapons, type LightingPreset, type StarFoxConfig } from "@data/lab";
 import type { ProgressStore } from "@utils/progressStore";
 
+import { EnemyShots } from "../combat/EnemyShots";
 import { Explosions } from "../combat/Explosions";
 import { Lasers } from "../combat/Lasers";
 import { GameContext, type GameContextValue } from "../gameContext";
@@ -13,8 +14,7 @@ import { createSim } from "../game/sim";
 import type { InputRef } from "../hooks/useInput";
 import { ChaseCamera } from "./ChaseCamera";
 import { Enemies } from "./Enemies";
-import { EnemyShots } from "./EnemyShots";
-import { isRunLive, type GameStore } from "./gameStore";
+import { applyDamage, isRunLive, type GameStore } from "./gameStore";
 import { Ground } from "./Ground";
 import { RailContext } from "./railContext";
 import { Scenery } from "./Scenery";
@@ -35,6 +35,8 @@ type GameRunProps = {
 export function GameRun({ config, lighting, inputRef, store, progress }: GameRunProps) {
   const shipRef = useRef<THREE.Group | null>(null);
   const simRef = useRef(createSim());
+  // Rail mode always flies the twin laser.
+  const weaponRef = useRef(weapons.twin);
 
   const game = useMemo<GameContextValue>(
     () => ({
@@ -43,9 +45,11 @@ export function GameRun({ config, lighting, inputRef, store, progress }: GameRun
       shipRef,
       inputRef,
       simRef,
+      weaponRef,
       progress,
       scrollSpeed: config.world.scrollSpeed,
       isLive: () => isRunLive(store.get().phase),
+      damageShip: (amount) => applyDamage(store, amount),
     }),
     [lighting, config.combat, config.world.scrollSpeed, inputRef, progress, store],
   );

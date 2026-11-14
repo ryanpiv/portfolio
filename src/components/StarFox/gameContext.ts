@@ -1,7 +1,7 @@
 import { createContext, useContext, type RefObject } from "react";
 import type * as THREE from "three";
 
-import type { CombatConfig, LightingPreset } from "@data/lab";
+import type { CombatConfig, LightingPreset, WeaponSpec } from "@data/lab";
 import type { ProgressStore } from "@utils/progressStore";
 
 import type { Sim } from "./game/sim";
@@ -15,8 +15,14 @@ import type { InputRef } from "./hooks/useInput";
 export type GameContextValue = {
   lighting: LightingPreset;
   combat: CombatConfig;
-  /** The player's ship group. `userData.aim` (quaternion) is where it is pointing; `userData.rolling` while barrel-rolling. */
+  /**
+   * The player's ship group. `userData.aim` (quaternion) is where it is
+   * pointing; `userData.rolling` while barrel-rolling; `userData.immune`
+   * while shots and rams should bounce off.
+   */
   shipRef: RefObject<THREE.Group | null>;
+  /** The weapon the lasers fire; modes swap it on pickups and deaths. */
+  weaponRef: RefObject<WeaponSpec>;
   inputRef: InputRef;
   /** Per-frame mutable state shared by the combat systems. */
   simRef: RefObject<Sim>;
@@ -26,6 +32,8 @@ export type GameContextValue = {
   scrollSpeed: number;
   /** Whether the player may act right now (not dead, not mid-transition). */
   isLive: () => boolean;
+  /** Takes health off the player; each mode decides what running out means. */
+  damageShip: (amount: number) => void;
 };
 
 export const GameContext = createContext<GameContextValue | null>(null);

@@ -1,0 +1,32 @@
+@use "../../../styles" as *;
+
+// Centre-screen notice while the ship is down.
+
+.callout {
+  text-align: center;
+  animation: callout 320ms ease both;
+}
+
+.callout__eyebrow {
+  @include mono-label(0.6875rem, 0.2em);
+  margin: 0 0 $space-1;
+  color: $color-rewrite;
+}
+
+.callout__title {
+  @include display-title(1.6rem, 2.4rem);
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--hud-ink);
+}
+
+@keyframes callout {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

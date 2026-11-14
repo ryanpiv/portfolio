@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 
-import { PortalTransition, TRANSITION_MS } from "../roam/PortalTransition";
+import { ARRIVAL_MS, PortalTransition, TRANSITION_MS } from "../roam/PortalTransition";
 
 const transition = { slug: "parse-ai", title: "Parse AI", color: "#a8f0c4" };
 
@@ -34,5 +34,13 @@ describe("PortalTransition", () => {
     unmount();
     act(() => jest.advanceTimersByTime(TRANSITION_MS));
     expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it("plays the shorter arrival wash when coming back", () => {
+    const onDone = jest.fn();
+    render(<PortalTransition transition={transition} direction="arrive" onDone={onDone} />);
+    expect(screen.getByRole("status")).toHaveTextContent("back from");
+    act(() => jest.advanceTimersByTime(ARRIVAL_MS));
+    expect(onDone).toHaveBeenCalledWith(transition);
   });
 });

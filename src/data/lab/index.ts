@@ -6,4 +6,5 @@ export * from "./lighting";
 export * from "./starfox";
 export * from "./starfoxWaves";
 export * from "./starfoxRoam";
+export * from "./starfoxWeapons";
 export * from "./achievements";

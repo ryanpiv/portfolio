@@ -11,7 +11,7 @@ export const starFoxRoamMeta = {
   title: "Corneria, all-range",
   tagline: "Free roam the same ship.",
   description:
-    "An open arena of towers with a portal for every project. Fly through one and it takes over the screen on the way to the project page; chase the fighters for points; milestones unlock achievements shared with the rail mission.",
+    "An open arena of towers with a portal for every project. Fly through one and it takes over the screen on the way to the project page; chase the fighters for points, grab power-ups to swap weapons, and level a tower with the plasma cannon. Crashing costs a hull bar and a respawn, nothing more. Milestones unlock achievements shared with the rail mission.",
 } as const;
 
 export type RoamConfig = {
@@ -53,6 +53,48 @@ export type RoamConfig = {
     portal: number;
     /** Extra for a project's first visit. */
     firstVisit: number;
+    tower: number;
+    pickup: number;
+  };
+  /** Arcade survival: a health bar, death, and coming back. */
+  hull: {
+    healthMax: number;
+    /** Fighter health; weapons chip at it per bolt. */
+    roamerHealth: number;
+    /** Seconds the wreck lingers before you respawn. */
+    respawnDelay: number;
+    /** Seconds of invulnerability after a respawn or an arrival. */
+    immunity: number;
+    /** Open space needed around a respawn point. */
+    respawnClearance: number;
+  };
+  /**
+   * Hitting a tower. Severity is how head-on the hit was: the fraction of
+   * your speed pointing into the wall (1 = nose first, 0 = a graze).
+   */
+  collision: {
+    /** At or above this severity the ship is destroyed outright. */
+    fatalAbove: number;
+    /** Between this and `fatalAbove` take `heavyDamage`; below it `lightDamage`. */
+    heavyAbove: number;
+    heavyDamage: number;
+    lightDamage: number;
+    /** Seconds after a hit before towers can hurt again (stops a slide from stacking damage). */
+    grace: number;
+  };
+  towers: {
+    /** Health per unit of tower height; plasma chews through it. */
+    healthPerMetre: number;
+  };
+  pickups: {
+    count: number;
+    /** Seconds before a collected pickup reappears elsewhere. */
+    respawnDelay: number;
+    /** Altitude band pickups float in. */
+    minAltitude: number;
+    maxAltitude: number;
+    /** Pickup radius for fly-through collection. */
+    radius: number;
   };
 };
 
@@ -86,5 +128,31 @@ export const starFoxRoamConfig: RoamConfig = {
     kill: 100,
     portal: 250,
     firstVisit: 500,
+    tower: 150,
+    pickup: 50,
+  },
+  hull: {
+    healthMax: 100,
+    roamerHealth: 100,
+    respawnDelay: 1.6,
+    immunity: 5,
+    respawnClearance: 12,
+  },
+  collision: {
+    fatalAbove: 0.5,
+    heavyAbove: 0.25,
+    heavyDamage: 40,
+    lightDamage: 10,
+    grace: 0.6,
+  },
+  towers: {
+    healthPerMetre: 10,
+  },
+  pickups: {
+    count: 6,
+    respawnDelay: 12,
+    minAltitude: 8,
+    maxAltitude: 40,
+    radius: 3,
   },
 };

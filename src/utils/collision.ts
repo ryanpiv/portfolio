@@ -85,6 +85,46 @@ export function resolveSphereAabb(center: Vec3, radius: number, box: Aabb): Vec3
 }
 
 /**
+ * Whether the segment from `start` to `end` passes through a box (slab
+ * test). Returns the entry point, or `null` on a miss. For bolts against
+ * towers.
+ */
+export function segmentHitsAabb(start: Vec3, end: Vec3, box: Aabb): Vec3 | null {
+  let tMin = 0;
+  let tMax = 1;
+  for (let axis = 0; axis < 3; axis++) {
+    const d = end[axis] - start[axis];
+    if (Math.abs(d) < 1e-9) {
+      if (start[axis] < box.min[axis] || start[axis] > box.max[axis]) return null;
+      continue;
+    }
+    let t0 = (box.min[axis] - start[axis]) / d;
+    let t1 = (box.max[axis] - start[axis]) / d;
+    if (t0 > t1) [t0, t1] = [t1, t0];
+    tMin = Math.max(tMin, t0);
+    tMax = Math.min(tMax, t1);
+    if (tMin > tMax) return null;
+  }
+  return [
+    start[0] + (end[0] - start[0]) * tMin,
+    start[1] + (end[1] - start[1]) * tMin,
+    start[2] + (end[2] - start[2]) * tMin,
+  ];
+}
+
+/** Whether a point lies inside a box, grown by `margin` on every side. */
+export function pointInAabb(point: Vec3, box: Aabb, margin = 0): boolean {
+  return (
+    point[0] >= box.min[0] - margin &&
+    point[0] <= box.max[0] + margin &&
+    point[1] >= box.min[1] - margin &&
+    point[1] <= box.max[1] + margin &&
+    point[2] >= box.min[2] - margin &&
+    point[2] <= box.max[2] + margin
+  );
+}
+
+/**
  * Whether the segment from `start` to `end` crosses a disc: the circle of
  * `radius` around `center` lying in the plane with unit `normal`. Used for
  * flying through portal rings without tunnelling at speed.

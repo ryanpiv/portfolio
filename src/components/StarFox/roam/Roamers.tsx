@@ -10,6 +10,7 @@ import { createRng, type Vec3 } from "@utils/fieldLayout";
 import { recordStat } from "@utils/progressStore";
 
 import { EnemyModel } from "../entities/EnemyModel";
+import { fireShot } from "../game/fireShot";
 import { turnToward, wrapAngle, yawToward } from "../game/steering";
 import { useGameFrame } from "../hooks/useGameFrame";
 import { useRoam } from "./roamContext";
@@ -28,6 +29,10 @@ const SCARE_DISTANCE = 32;
 const BOLT_SCARE_DISTANCE = 8;
 /** How long a spooked roamer keeps running. */
 const ALARM_S = 3;
+/** Spooked roamers shoot back while the ship is within this range. */
+const FIRE_RANGE = 120;
+/** Head start before a freshly spooked roamer opens fire. */
+const FIRST_SHOT_DELAY = 0.6;
 /** Downtime between a kill and the fighter re-entering. */
 const RESPAWN_S = 4;
 /** Fresh spawns and scatter targets land in this fraction of the arena. */
@@ -46,6 +51,7 @@ type RoamerSpawn = { id: string; project: Project };
 
 type RoamerMotion = {
   alive: boolean;
+  health: number;
   position: Vec3;
   yaw: number;
   bank: number;
@@ -54,16 +60,19 @@ type RoamerMotion = {
   alarm: number;
   /** Seconds until respawn; only meaningful while dead. */
   respawn: number;
+  /** Seconds until the next shot while alarmed. */
+  cooldown: number;
 };
 
 /**
- * Passive fighters that wander between waypoints, scatter when the ship or a
- * bolt gets close, and respawn a few seconds after being shot down. They
- * never fire: the arena is a sandbox for points.
+ * Fighters that wander between waypoints, scatter and shoot back when the
+ * ship or a bolt gets close, and respawn a few seconds after being shot
+ * down. Left alone they are harmless; the arena is a project explorer first.
  */
 export function Roamers() {
-  const { config, combat, lighting, shipRef, simRef, store, progress, radarRef } = useRoam();
+  const { config, combat, lighting, shipRef, simRef, store, progress, radarRef, isLive } = useRoam();
   const { roamerCount, radius, seed } = config.arena;
+  const { roamerHealth } = config.hull;
   const rng = useMemo(() => createRng(seed * 7919), [seed]);
   const roster = useMemo<RoamerSpawn[]>(
     () => Array.from({ length: roamerCount }, (_, i) => ({ id: `roamer-${i}`, project: projects[i % projects.length] })),
@@ -98,6 +107,7 @@ export function Roamers() {
     const sim = simRef.current;
     const shipPos: Vec3 = [ship.position.x, ship.position.y, ship.position.z];
     const hitRadius = combat.enemyRadius * ROAMER_SCALE;
+    const live = isLive();
     const blips = radarRef.current.roamers;
     blips.length = 0;
 
@@ -107,7 +117,17 @@ export function Roamers() {
       let m = motion.current.get(spawn.id);
       if (!m) {
         const position = spawnPoint(shipPos);
-        m = { alive: true, position, yaw: rng() * Math.PI * 2, bank: 0, waypoint: randomPoint(), alarm: 0, respawn: 0 };
+        m = {
+          alive: true,
+          health: roamerHealth,
+          position,
+          yaw: rng() * Math.PI * 2,
+          bank: 0,
+          waypoint: randomPoint(),
+          alarm: 0,
+          respawn: 0,
+          cooldown: 0,
+        };
         motion.current.set(spawn.id, m);
       }
       const self = m;
@@ -116,6 +136,7 @@ export function Roamers() {
         m.respawn -= delta;
         if (m.respawn <= 0) {
           m.alive = true;
+          m.health = roamerHealth;
           m.position = spawnPoint(shipPos);
           m.waypoint = randomPoint();
           m.alarm = 0;
@@ -131,11 +152,23 @@ export function Roamers() {
         (l) => l.active && segmentHitsSphere(l.prev, l.position, self.position, BOLT_SCARE_DISTANCE),
       );
       if (shipDistance < SCARE_DISTANCE || boltNear) {
-        if (m.alarm <= 0) m.waypoint = awayFrom(m.position, shipPos, radius * PLAY_FRACTION, randomPoint());
+        if (m.alarm <= 0) {
+          m.waypoint = awayFrom(m.position, shipPos, radius * PLAY_FRACTION, randomPoint());
+          m.cooldown = FIRST_SHOT_DELAY;
+        }
         m.alarm = ALARM_S;
       }
       m.alarm = Math.max(0, m.alarm - delta);
       const scattering = m.alarm > 0;
+
+      // Return fire while running, as long as the ship is in range.
+      if (scattering && live && shipDistance < FIRE_RANGE) {
+        m.cooldown -= delta;
+        if (m.cooldown <= 0) {
+          fireShot(sim.shots, m.position, shipPos, combat.enemyShotSpeed);
+          m.cooldown = combat.enemyFireInterval;
+        }
+      }
 
       // Steer toward the waypoint; pick a new one on arrival.
       const dx = m.waypoint[0] - m.position[0];
@@ -152,14 +185,27 @@ export function Roamers() {
       m.position[2] += Math.cos(m.yaw) * speed * delta;
       m.position[1] = THREE.MathUtils.damp(m.position[1], m.waypoint[1], 1, delta);
 
-      // Hits
-      const bolt = sim.lasers.find((l) => l.active && segmentHitsSphere(l.prev, l.position, self.position, hitRadius));
-      if (bolt) {
+      // Hits: every bolt that lands chips health; the killing one gets the burst.
+      const color = lighting.statusColors[spawn.project.status];
+      let downed = false;
+      for (let b = 0; b < sim.lasers.length; b++) {
+        const bolt = sim.lasers[b];
+        if (!bolt.active || !segmentHitsSphere(bolt.prev, bolt.position, self.position, hitRadius)) continue;
         bolt.active = false;
+        const dealt = Math.min(bolt.damage, m.health);
+        m.health -= dealt;
+        recordStat(progress, "damageDealt", dealt);
+        if (m.health <= 0) {
+          downed = true;
+          break;
+        }
+        sim.bursts.push({ position: [...bolt.position], color, size: 0.3 });
+      }
+      if (downed) {
         m.alive = false;
         m.respawn = RESPAWN_S;
         group.visible = false;
-        sim.bursts.push({ position: [...m.position], color: lighting.statusColors[spawn.project.status] });
+        sim.bursts.push({ position: [...m.position], color });
         recordKill(store, config.scoring.kill);
         recordStat(progress, "enemiesDestroyed");
         recordStat(progress, "points", config.scoring.kill);
@@ -169,7 +215,7 @@ export function Roamers() {
       m.bank = THREE.MathUtils.damp(m.bank, -THREE.MathUtils.clamp(turning, -1, 1) * BANK, BANK_LAMBDA, delta);
       group.position.set(m.position[0], m.position[1], m.position[2]);
       group.rotation.set(0, m.yaw, m.bank, "YXZ");
-      blips.push({ x: m.position[0], z: m.position[2], color: lighting.statusColors[spawn.project.status] });
+      blips.push({ x: m.position[0], z: m.position[2], color });
     }
   });
 

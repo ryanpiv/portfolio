@@ -13,8 +13,8 @@ import { useInput } from "./hooks/useInput";
 import { useProgress } from "./progress";
 import { createGameStore, initialGameState, type GamePhase, type GameRules } from "./rail/gameStore";
 import { MissionScreen } from "./rail/MissionScreen";
-import { ShieldBar } from "./rail/ShieldBar";
 import { WaveCallout } from "./rail/WaveCallout";
+import { ShieldBar } from "./ShieldBar";
 import styles from "./StarFox.module.scss";
 import { StarFoxHud } from "./StarFoxHud";
 

@@ -83,6 +83,11 @@ function paint(ctx: CanvasRenderingContext2D, radar: RadarFrame, ink: string, mu
     ctx.arc(px, pz, BLIP_RADIUS + 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
+  for (const blip of radar.pickups) {
+    const [px, pz] = plot(blip.x, blip.z);
+    ctx.fillStyle = blip.color;
+    ctx.fillRect(px - BLIP_RADIUS * 0.7, pz - BLIP_RADIUS * 0.7, BLIP_RADIUS * 1.4, BLIP_RADIUS * 1.4);
+  }
   for (const blip of radar.roamers) {
     const [px, pz] = plot(blip.x, blip.z);
     ctx.strokeStyle = blip.color;

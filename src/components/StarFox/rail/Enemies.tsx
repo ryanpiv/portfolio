@@ -12,7 +12,7 @@ import { dealIntoWaves } from "@utils/waveLayout";
 
 import { useRail } from "./railContext";
 import { buildWave } from "./buildWave";
-import { fireShot } from "./fireShot";
+import { fireShot } from "../game/fireShot";
 import { applyDamage, isRunLive, recordEscape, recordHit, type GamePhase } from "./gameStore";
 import type { Laser } from "../game/sim";
 import { createDirector, stepDirector, type DirectorPhase } from "./waveDirector";
@@ -135,6 +135,7 @@ export function Enemies() {
         sim.bursts.push({ position: center, color });
         recordHit(store, m.project.slug);
         recordStat(progress, "enemiesDestroyed");
+        recordStat(progress, "damageDealt", bolt.damage);
         recordStat(progress, "points", config.scoring.kill);
         return;
       }

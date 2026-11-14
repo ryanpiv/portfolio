@@ -1,6 +1,14 @@
 import type { Vec3 } from "../fieldLayout";
 
-import { resolveSphereAabb, segmentCrossesDisc, segmentHitsSphere, spheresOverlap, type Aabb } from "../collision";
+import {
+  pointInAabb,
+  resolveSphereAabb,
+  segmentCrossesDisc,
+  segmentHitsAabb,
+  segmentHitsSphere,
+  spheresOverlap,
+  type Aabb,
+} from "../collision";
 
 describe("spheresOverlap", () => {
   it("overlaps when centres are closer than the summed radii", () => {
@@ -83,5 +91,33 @@ describe("segmentCrossesDisc", () => {
   it("works in either direction and at a slant", () => {
     expect(segmentCrossesDisc([0, 5, -2], [0, 5, 2], center, normal, 3)).toBe(true);
     expect(segmentCrossesDisc([-2, 3, 2], [2, 7, -2], center, normal, 3)).toBe(true);
+  });
+});
+
+describe("segmentHitsAabb", () => {
+  const box: Aabb = { min: [-1, 0, -1], max: [1, 4, 1] };
+
+  it("returns the entry point when the segment passes through", () => {
+    expect(segmentHitsAabb([0, 2, 5], [0, 2, -5], box)).toEqual([0, 2, 1]);
+    expect(segmentHitsAabb([-5, 2, 0], [5, 2, 0], box)).toEqual([-1, 2, 0]);
+  });
+
+  it("misses a segment that stops short or passes beside", () => {
+    expect(segmentHitsAabb([0, 2, 5], [0, 2, 2], box)).toBeNull();
+    expect(segmentHitsAabb([3, 2, 5], [3, 2, -5], box)).toBeNull();
+    expect(segmentHitsAabb([0, 6, 5], [0, 6, -5], box)).toBeNull();
+  });
+
+  it("reports a segment starting inside as an immediate hit", () => {
+    expect(segmentHitsAabb([0, 2, 0], [0, 2, -5], box)).toEqual([0, 2, 0]);
+  });
+});
+
+describe("pointInAabb", () => {
+  const box: Aabb = { min: [-1, 0, -1], max: [1, 4, 1] };
+  it("tests containment with an optional margin", () => {
+    expect(pointInAabb([0, 2, 0], box)).toBe(true);
+    expect(pointInAabb([1.5, 2, 0], box)).toBe(false);
+    expect(pointInAabb([1.5, 2, 0], box, 1)).toBe(true);
   });
 });

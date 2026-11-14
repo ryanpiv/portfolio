@@ -14,10 +14,11 @@ export type RadarFrame = {
   ship: { x: number; z: number; yaw: number };
   portals: RadarBlip[];
   roamers: RadarBlip[];
+  pickups: RadarBlip[];
 };
 
 export type RadarRef = RefObject<RadarFrame>;
 
 export function createRadarFrame(range: number): RadarFrame {
-  return { range, ship: { x: 0, z: 0, yaw: 0 }, portals: [], roamers: [] };
+  return { range, ship: { x: 0, z: 0, yaw: 0 }, portals: [], roamers: [], pickups: [] };
 }
