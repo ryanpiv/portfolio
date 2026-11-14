@@ -39,6 +39,9 @@ export const DOUBLE_TAP_MS = 260;
 /** Pointer travel (as a fraction of the stage) that maps to full deflection. */
 const POINTER_RANGE = 0.35;
 
+/** Presses on HUD controls must stay clicks, not become steering. */
+const INTERACTIVE_SELECTOR = "button, a, input, select, textarea, [role='button']";
+
 function clamp1(value: number): number {
   return Math.max(-1, Math.min(1, value));
 }
@@ -137,6 +140,7 @@ export function useInput() {
   /** Spread onto the stage element. */
   const bind = {
     onPointerDown: (event: ReactPointerEvent<HTMLElement>) => {
+      if ((event.target as Element).closest(INTERACTIVE_SELECTOR)) return;
       event.currentTarget.setPointerCapture(event.pointerId);
       readPointer(event);
     },

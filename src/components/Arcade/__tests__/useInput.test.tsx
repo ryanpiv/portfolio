@@ -111,4 +111,20 @@ describe("useInput", () => {
     pointer("pointerup", 500, 0);
     expect(input.current).toMatchObject({ x: 0, y: 0, fire: false });
   });
+
+  it("leaves presses on HUD controls alone so they stay clicks", () => {
+    const { result } = renderHook(() => useInput());
+    const { bind, input } = result.current;
+    const { getByRole } = render(
+      <div {...bind}>
+        <button type="button">theme</button>
+      </div>,
+    );
+    const capture = jest.fn();
+    (getByRole("button").parentElement as HTMLElement).setPointerCapture = capture;
+
+    fireEvent(getByRole("button"), new MouseEvent("pointerdown", { clientX: 10, clientY: 10, bubbles: true }));
+    expect(capture).not.toHaveBeenCalled();
+    expect(input.current.fire).toBe(false);
+  });
 });

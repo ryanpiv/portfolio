@@ -63,9 +63,20 @@ $reveal-ms: 480ms;
 
 .panel__slot {
   @include mono-label(0.75rem, 0.2em);
+  display: flex;
+  align-items: center;
+  gap: $space-3;
   margin-bottom: $space-5;
   color: var(--accent);
   opacity: 0.85;
+}
+
+.panel__recommended {
+  padding: 0.15em 0.6em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
 }
 
 .panel__eyebrow {

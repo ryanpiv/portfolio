@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import type { RapierRigidBody } from "@react-three/rapier";
 
 import { LabEffects, LabLighting } from "@components/LabScene";
+import type { QualityPreset } from "@data/lab";
 import type { Project } from "@data/projects";
 import { layoutField } from "@utils/fieldLayout";
 
@@ -15,6 +16,7 @@ import { useFieldBounds } from "./hooks/useFieldBounds";
 type FieldWorldProps = {
   projects: Project[];
   settings: FieldSettings;
+  quality: QualityPreset;
   /** Bump to re-layout the field. */
   seed: number;
   interaction: FieldInteraction;
@@ -24,7 +26,7 @@ type FieldWorldProps = {
 const LAYOUT_INSET = 0.85;
 
 /** Everything inside `<Physics>`: lighting, constraints, bodies, post effects. */
-export function FieldWorld({ projects, settings, seed, interaction }: FieldWorldProps) {
+export function FieldWorld({ projects, settings, quality, seed, interaction }: FieldWorldProps) {
   const [bodies] = useState<BodyRegistry>(() => new Map());
   const coreRef = useRef<RapierRigidBody>(null!);
   const bounds = useFieldBounds(settings.halfDepth);
@@ -68,7 +70,7 @@ export function FieldWorld({ projects, settings, seed, interaction }: FieldWorld
         ))}
       </group>
 
-      <LabEffects lighting={settings.lighting} />
+      <LabEffects lighting={settings.lighting} quality={quality} />
     </FieldContext.Provider>
   );
 }

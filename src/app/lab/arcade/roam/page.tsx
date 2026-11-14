@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ArcadeRoamPage({ searchParams }: ArcadeRoamRouteProps) {
-  const { theme } = parseLabQuery(await searchParams);
+  const { theme, quality } = parseLabQuery(await searchParams);
   return (
     <main aria-label={`${roamMeta.title} free roam`}>
-      <ArcadeRoam initialTheme={theme} />
+      <ArcadeRoam initialTheme={theme} initialQuality={quality} />
     </main>
   );
 }

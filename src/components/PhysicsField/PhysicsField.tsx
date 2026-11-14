@@ -5,23 +5,22 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { FieldHud } from "@components/FieldHud";
-import { labVariants, type FieldViewOptions, type LabTheme, type LabVariant } from "@data/lab";
-import type { Project } from "@data/projects";
-import { cx } from "@utils/cx";
-
 import { TuningPanel } from "@components/LabScene";
+import { LabStage, SceneLoading } from "@components/LabStage";
+import { labVariants, qualityPresets, type FieldViewOptions, type LabTheme, type LabVariant, type QualityId } from "@data/lab";
+import type { Project } from "@data/projects";
 import { useLabViewState } from "@hooks/useLabViewState";
-import styles from "./PhysicsField.module.scss";
 
 const PhysicsFieldScene = dynamic(() => import("./PhysicsFieldScene"), {
   ssr: false,
-  loading: () => <p className={styles.physicsField__loading}>warming up the field…</p>,
+  loading: () => <SceneLoading>warming up the field…</SceneLoading>,
 });
 
 type PhysicsFieldProps = {
   projects: Project[];
   variant: LabVariant;
   initialTheme?: LabTheme;
+  initialQuality?: QualityId;
   initialView?: FieldViewOptions;
 };
 
@@ -36,11 +35,12 @@ function cursorFor(dragging: string | null, hovered: string | null): string {
  * (theme, view options, hovered/dragging slug) and renders the HUD; the
  * WebGL scene is loaded client-only.
  */
-export function PhysicsField({ projects, variant, initialTheme, initialView }: PhysicsFieldProps) {
+export function PhysicsField({ projects, variant, initialTheme, initialQuality, initialView }: PhysicsFieldProps) {
   const router = useRouter();
-  const { theme, setTheme, view, patchView } = useLabViewState({
+  const { theme, setTheme, quality, setQuality, degradeQuality, view, patchView, capability } = useLabViewState({
     variantId: variant.id,
     initialTheme,
+    initialQuality,
     initialView,
   });
   const [hovered, setHovered] = useState<string | null>(null);
@@ -54,34 +54,39 @@ export function PhysicsField({ projects, variant, initialTheme, initialView }: P
   );
 
   return (
-    <div
-      className={cx(styles.physicsField, styles[`physicsField--${theme}`])}
+    <LabStage
+      theme={theme}
+      capability={capability}
       style={{ cursor: cursorFor(dragging, hovered) }}
-    >
-      <div className={styles.physicsField__canvas}>
+      scene={
         <PhysicsFieldScene
           projects={projects}
           variant={variant}
           theme={theme}
           view={view}
+          quality={qualityPresets[quality]}
+          onDegrade={degradeQuality}
           hovered={hovered}
           dragging={dragging}
           setHovered={setHovered}
           setDragging={setDragging}
           onSelect={handleSelect}
         />
-      </div>
+      }
+    >
       <FieldHud
         variant={variant}
         variants={labVariants}
         theme={theme}
         onThemeChange={setTheme}
+        quality={quality}
+        onQualityChange={setQuality}
         view={view}
         onViewChange={patchView}
         hovered={hoveredProject}
         dragging={dragging !== null}
         controls={<TuningPanel />}
       />
-    </div>
+    </LabStage>
   );
 }

@@ -3,16 +3,18 @@ import { buildLabUrl, parseLabQuery } from "@utils/labUrl";
 
 describe("parseLabQuery", () => {
   it("falls back to defaults for missing or junk values", () => {
-    expect(parseLabQuery({})).toEqual({ theme: undefined, view: defaultViewOptions });
-    expect(parseLabQuery({ theme: "neon", names: "sometimes", lines: "maybe" })).toEqual({
+    expect(parseLabQuery({})).toEqual({ theme: undefined, quality: undefined, view: defaultViewOptions });
+    expect(parseLabQuery({ theme: "neon", quality: "ultra", names: "sometimes", lines: "maybe" })).toEqual({
       theme: undefined,
+      quality: undefined,
       view: defaultViewOptions,
     });
   });
 
   it("reads valid values and takes the first of repeated params", () => {
-    expect(parseLabQuery({ theme: ["light", "dark"], names: "hover", lines: "off" })).toEqual({
+    expect(parseLabQuery({ theme: ["light", "dark"], quality: "low", names: "hover", lines: "off" })).toEqual({
       theme: "light",
+      quality: "low",
       view: { nameplates: "hover", tetherLines: false },
     });
   });
@@ -24,6 +26,10 @@ describe("buildLabUrl", () => {
       "/lab/caged?theme=dark",
     );
     expect(buildLabUrl("caged", { view: defaultViewOptions })).toBe("/lab/caged");
+  });
+
+  it("writes the quality tier when picked", () => {
+    expect(buildLabUrl("caged", { quality: "low", view: defaultViewOptions })).toBe("/lab/caged?quality=low");
   });
 
   it("writes non-default view options", () => {

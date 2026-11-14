@@ -28,7 +28,7 @@ export default function LabPage() {
       <PageHeader
         eyebrow="Lab"
         title="Experiments"
-        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a arcade rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the classic grid at /projects is unchanged."
+        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus an arcade rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the classic grid at /projects is unchanged."
       />
 
       <ul className={styles.lab__list}>
@@ -56,7 +56,9 @@ export default function LabPage() {
 
       <p className={styles.lab__note}>
         Built with three.js, react-three-fiber, Rapier (physics), and postprocessing (bloom + lens
-        flare). Tune everything live from the panel on each page.
+        flare). Every scene has a quality switch (low / balanced / high), picks a starting tier from
+        the device, and steps itself down if frames drop; without WebGL it shows a plain link back to
+        the roster. Tune everything else live from the panel on each page.
       </p>
     </main>
   );

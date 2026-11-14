@@ -23,6 +23,8 @@ function renderHud(overrides: Partial<ComponentProps<typeof FieldHud>> = {}) {
     variants: labVariants,
     theme: "dark",
     onThemeChange: jest.fn(),
+    quality: "high",
+    onQualityChange: jest.fn(),
     view: defaultViewOptions,
     onViewChange: jest.fn(),
     hovered: null,
@@ -39,7 +41,7 @@ describe("FieldHud", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Caged");
     expect(screen.getByRole("link", { name: "Tethered" })).toHaveAttribute(
       "href",
-      "/lab/tethered?theme=dark",
+      "/lab/tethered?theme=dark&quality=high",
     );
     expect(screen.getByText(/hover a sphere to slow it/i)).toBeInTheDocument();
   });
@@ -48,7 +50,7 @@ describe("FieldHud", () => {
     renderHud({ view: { nameplates: "hover", tetherLines: false } });
     expect(screen.getByRole("link", { name: "Attractor" })).toHaveAttribute(
       "href",
-      "/lab/attractor?theme=dark&names=hover&lines=off",
+      "/lab/attractor?theme=dark&quality=high&names=hover&lines=off",
     );
   });
 

@@ -1,13 +1,18 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 
-import { LabEffects, LabLighting } from "@components/LabScene";
-import type { LightingPreset } from "@data/lab";
+import { LabCanvas, LabEffects, LabLighting } from "@components/LabScene";
+import type { LightingPreset, QualityPreset } from "@data/lab";
 
-type SceneFrameProps = {
+export type SceneQuality = {
+  quality: QualityPreset;
+  onDegrade: () => void;
+};
+
+type SceneFrameProps = SceneQuality & {
   lighting: LightingPreset;
   fog: { near: number; far: number };
   camera: { position: [number, number, number]; fov: number };
@@ -15,21 +20,19 @@ type SceneFrameProps = {
 };
 
 /** Canvas + lighting + fog + post-processing shared by every arcade mode. */
-export function SceneFrame({ lighting, fog, camera, children }: SceneFrameProps) {
+export function SceneFrame({ quality, onDegrade, lighting, fog, camera, children }: SceneFrameProps) {
   return (
-    <Canvas
-      shadows
-      dpr={[1, 2]}
+    <LabCanvas
+      quality={quality}
+      onDegrade={onDegrade}
       camera={{ position: camera.position, fov: camera.fov, near: 0.1, far: 600 }}
-      gl={{ antialias: false, powerPreference: "high-performance" }}
-      style={{ touchAction: "none" }}
     >
       <CameraFov fov={camera.fov} />
       <LabLighting lighting={lighting} />
       <fog attach="fog" args={[lighting.background, fog.near, fog.far]} />
       {children}
-      <LabEffects lighting={lighting} />
-    </Canvas>
+      <LabEffects lighting={lighting} quality={quality} />
+    </LabCanvas>
   );
 }
 

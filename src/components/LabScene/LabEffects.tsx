@@ -4,17 +4,23 @@ import { Bloom, EffectComposer, LensFlare } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 
-import type { LightingPreset } from "@data/lab";
+import type { LightingPreset, QualityPreset } from "@data/lab";
 
 type LabEffectsProps = {
   lighting: LightingPreset;
+  quality: QualityPreset;
 };
 
-/** Bloom on bright surfaces plus a lens flare anchored to the key light. */
-export function LabEffects({ lighting }: LabEffectsProps) {
+/**
+ * Bloom on bright surfaces plus a lens flare anchored to the key light.
+ * Skipped entirely on tiers without effects: the composer is the single
+ * most expensive thing in these scenes.
+ */
+export function LabEffects({ lighting, quality }: LabEffectsProps) {
   const { bloom, flare, key } = lighting;
+  if (!quality.effects) return null;
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={quality.multisampling}>
       <Bloom
         intensity={bloom.intensity}
         luminanceThreshold={bloom.luminanceThreshold}

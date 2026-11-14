@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 
-import { PillGroup, PillNav, type PillOption } from "@components/PillGroup";
-import { ARCADE_RAIL_ID, ARCADE_ROAM_ID, railMeta, roamMeta, type LabTheme } from "@data/lab";
+import { QualitySwitch, ThemeSwitch } from "@components/LabSwitches";
+import { PillNav } from "@components/PillGroup";
+import { ARCADE_RAIL_ID, ARCADE_ROAM_ID, railMeta, roamMeta, type LabTheme, type QualityId } from "@data/lab";
 import { cx } from "@utils/cx";
 import { buildLabUrl, defaultLabQuery } from "@utils/labUrl";
 import type { ProgressStore } from "@utils/progressStore";
@@ -18,6 +19,8 @@ export type ReadoutEntry = { label: string; value: string };
 type ArcadeHudProps = {
   theme: LabTheme;
   onThemeChange: (theme: LabTheme) => void;
+  quality: QualityId;
+  onQualityChange: (quality: QualityId) => void;
   mode: GameMode;
   progress: ProgressStore;
   /** Top centre: the shield / hull bar. */
@@ -36,11 +39,6 @@ type ArcadeHudProps = {
   controls?: (hidden: boolean) => ReactNode;
 };
 
-const THEME_OPTIONS: PillOption<LabTheme>[] = [
-  { value: "dark", label: "dark" },
-  { value: "light", label: "light" },
-];
-
 const MODES: ReadonlyArray<{ mode: GameMode; variantId: string; label: string }> = [
   { mode: "rail", variantId: ARCADE_RAIL_ID, label: "rail" },
   { mode: "roam", variantId: ARCADE_ROAM_ID, label: "free roam" },
@@ -58,6 +56,8 @@ const META: Record<GameMode, { title: string }> = { rail: railMeta, roam: roamMe
 export function ArcadeHud({
   theme,
   onThemeChange,
+  quality,
+  onQualityChange,
   mode,
   progress,
   gauge,
@@ -70,7 +70,7 @@ export function ArcadeHud({
 }: ArcadeHudProps) {
   const [tuning, setTuning] = useState(false);
   const modeItems = MODES.map((entry) => ({
-    href: buildLabUrl(entry.variantId, { ...defaultLabQuery, theme }),
+    href: buildLabUrl(entry.variantId, { ...defaultLabQuery, theme, quality }),
     label: entry.label,
     active: entry.mode === mode,
   }));
@@ -90,7 +90,8 @@ export function ArcadeHud({
         </div>
         <div className={styles.hud__gauge}>{gauge}</div>
         <div className={styles.hud__switches}>
-          <PillGroup label="Theme" options={THEME_OPTIONS} value={theme} onChange={onThemeChange} />
+          <ThemeSwitch value={theme} onChange={onThemeChange} />
+          <QualitySwitch value={quality} onChange={onQualityChange} />
           {controls && (
             <button
               type="button"

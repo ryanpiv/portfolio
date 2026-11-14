@@ -9,6 +9,8 @@ function renderHud(mode: "rail" | "roam" = "rail") {
     <ArcadeHud
       theme="dark"
       onThemeChange={() => {}}
+      quality="high"
+      onQualityChange={() => {}}
       mode={mode}
       progress={createProgressStore()}
       readout={[
@@ -45,7 +47,7 @@ describe("ArcadeHud", () => {
     expect(nav).toContainElement(rail);
     expect(rail).toHaveAttribute("aria-current", "page");
     expect(roam).not.toHaveAttribute("aria-current");
-    expect(roam).toHaveAttribute("href", "/lab/arcade/roam?theme=dark");
+    expect(roam).toHaveAttribute("href", "/lab/arcade/roam?theme=dark&quality=high");
   });
 
   it("includes the achievements panel", () => {

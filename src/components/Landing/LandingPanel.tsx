@@ -7,6 +7,8 @@ import styles from "./Landing.module.scss";
 type LandingPanelProps = {
   choice: LandingChoice;
   align: "start" | "end";
+  /** Marked as the better fit for this device. */
+  recommended: boolean;
 };
 
 /**
@@ -16,7 +18,7 @@ type LandingPanelProps = {
 const UNPICKED_SHIFT: Record<LandingPanelProps["align"], string> = { start: "-16%", end: "16%" };
 
 /** One pick in the chooser; the stat sheet unfurls on hover. */
-export function LandingPanel({ choice, align }: LandingPanelProps) {
+export function LandingPanel({ choice, align, recommended }: LandingPanelProps) {
   return (
     <SlantPanel
       href={choice.href}
@@ -24,7 +26,10 @@ export function LandingPanel({ choice, align }: LandingPanelProps) {
       unpickedShift={UNPICKED_SHIFT[align]}
       className={cx(styles.panel, styles[`panel--${choice.id}`])}
     >
-      <span className={styles.panel__slot}>{choice.slot}</span>
+      <span className={styles.panel__slot}>
+        {choice.slot}
+        {recommended && <span className={styles.panel__recommended}>recommended</span>}
+      </span>
       <span className={styles.panel__eyebrow}>{choice.eyebrow}</span>
       <span className={styles.panel__title}>{choice.title}</span>
       <span className={styles.panel__tagline}>{choice.tagline}</span>

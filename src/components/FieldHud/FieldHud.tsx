@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { LabHud } from "@components/LabHud";
 import { PillNav } from "@components/PillGroup";
 import { StatusLegend } from "@components/StatusLegend";
-import { labLighting, type FieldViewOptions, type LabTheme, type LabVariant } from "@data/lab";
+import { labLighting, type FieldViewOptions, type LabTheme, type LabVariant, type QualityId } from "@data/lab";
 import type { Project } from "@data/projects";
 import { buildLabUrl } from "@utils/labUrl";
 
@@ -15,6 +15,8 @@ type FieldHudProps = {
   variants: LabVariant[];
   theme: LabTheme;
   onThemeChange: (theme: LabTheme) => void;
+  quality: QualityId;
+  onQualityChange: (quality: QualityId) => void;
   view: FieldViewOptions;
   onViewChange: (patch: Partial<FieldViewOptions>) => void;
   hovered: Project | null;
@@ -29,6 +31,8 @@ export function FieldHud({
   variants,
   theme,
   onThemeChange,
+  quality,
+  onQualityChange,
   view,
   onViewChange,
   hovered,
@@ -36,7 +40,7 @@ export function FieldHud({
   controls,
 }: FieldHudProps) {
   const variantLinks = variants.map((item) => ({
-    href: buildLabUrl(item.id, { theme, view }),
+    href: buildLabUrl(item.id, { theme, quality, view }),
     label: item.title,
     active: item.id === variant.id,
   }));
@@ -53,6 +57,8 @@ export function FieldHud({
           <ViewSwitches
             theme={theme}
             onThemeChange={onThemeChange}
+            quality={quality}
+            onQualityChange={onQualityChange}
             view={view}
             onViewChange={onViewChange}
             hasTethers={variant.constraint.kind === "tether"}

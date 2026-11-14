@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 
-import type { FieldViewOptions, LabTheme, LabVariant } from "@data/lab";
+import { LabCanvas } from "@components/LabScene";
+import type { FieldViewOptions, LabTheme, LabVariant, QualityPreset } from "@data/lab";
 import type { Project } from "@data/projects";
 
 import { useFieldControls } from "./controls/useFieldControls";
@@ -16,6 +16,8 @@ export type PhysicsFieldSceneProps = FieldInteraction & {
   variant: LabVariant;
   theme: LabTheme;
   view: FieldViewOptions;
+  quality: QualityPreset;
+  onDegrade: () => void;
 };
 
 const CAMERA = { position: [0, 0, 18] as [number, number, number], fov: 45, near: 0.1, far: 200 };
@@ -30,6 +32,8 @@ export default function PhysicsFieldScene({
   variant,
   theme,
   view,
+  quality,
+  onDegrade,
   ...interaction
 }: PhysicsFieldSceneProps) {
   const [seed, setSeed] = useState(1);
@@ -41,16 +45,10 @@ export default function PhysicsFieldScene({
   });
 
   return (
-    <Canvas
-      shadows
-      dpr={[1, 2]}
-      camera={CAMERA}
-      gl={{ antialias: false, powerPreference: "high-performance" }}
-      style={{ touchAction: "none" }}
-    >
+    <LabCanvas quality={quality} onDegrade={onDegrade} camera={CAMERA}>
       <Physics gravity={[0, 0, 0]} paused={paused} timeStep="vary">
-        <FieldWorld projects={projects} settings={settings} seed={seed} interaction={interaction} />
+        <FieldWorld projects={projects} settings={settings} quality={quality} seed={seed} interaction={interaction} />
       </Physics>
-    </Canvas>
+    </LabCanvas>
   );
 }

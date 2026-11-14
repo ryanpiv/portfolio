@@ -6,7 +6,7 @@ import { labLighting, type LabTheme } from "@data/lab";
 import type { ProgressStore } from "@utils/progressStore";
 
 import type { InputRef } from "../hooks/useInput";
-import { gameLighting, SceneFrame } from "../SceneFrame";
+import { gameLighting, SceneFrame, type SceneQuality } from "../SceneFrame";
 import type { RadarRef } from "./radarFrame";
 import { RoamRun } from "./RoamRun";
 import type { RoamStore } from "./roamStore";
@@ -16,7 +16,7 @@ import { useRoamControls } from "./useRoamControls";
 const FOG_NEAR_FRACTION = 0.35;
 const FOG_FAR_FRACTION = 2.2;
 
-export type RoamSceneProps = {
+export type RoamSceneProps = SceneQuality & {
   theme: LabTheme;
   inputRef: InputRef;
   store: RoamStore;
@@ -25,13 +25,15 @@ export type RoamSceneProps = {
 };
 
 /** The free-roam WebGL scene. Loaded client-only via `next/dynamic` from `ArcadeRoam`. */
-export default function RoamScene({ theme, inputRef, store, progress, radarRef }: RoamSceneProps) {
+export default function RoamScene({ quality, onDegrade, theme, inputRef, store, progress, radarRef }: RoamSceneProps) {
   const { config, combat } = useRoamControls();
   const lighting = useMemo(() => gameLighting(labLighting[theme]), [theme]);
   const { radius } = config.arena;
 
   return (
     <SceneFrame
+      quality={quality}
+      onDegrade={onDegrade}
       lighting={lighting}
       fog={{ near: radius * FOG_NEAR_FRACTION, far: radius * FOG_FAR_FRACTION }}
       camera={{ position: [0, config.camera.height + 12, config.camera.distance], fov: config.camera.fov }}

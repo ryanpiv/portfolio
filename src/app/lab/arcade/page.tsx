@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ArcadeRailPage({ searchParams }: ArcadeRailRouteProps) {
-  const { theme } = parseLabQuery(await searchParams);
+  const { theme, quality } = parseLabQuery(await searchParams);
   return (
     <main aria-label={`${railMeta.title} rail shooter`}>
-      <ArcadeRail initialTheme={theme} />
+      <ArcadeRail initialTheme={theme} initialQuality={quality} />
     </main>
   );
 }

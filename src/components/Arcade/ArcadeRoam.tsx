@@ -5,11 +5,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
 import { TuningPanel } from "@components/LabScene";
-import { ARCADE_ROAM_ID, labLighting, roamConfig, weapons, type LabTheme } from "@data/lab";
+import { LabStage, SceneLoading } from "@components/LabStage";
+import { ARCADE_ROAM_ID, labLighting, qualityPresets, roamConfig, weapons, type LabTheme, type QualityId } from "@data/lab";
 import { projects } from "@data/projects";
 import { useLabViewState } from "@hooks/useLabViewState";
 import { useStore } from "@hooks/useStore";
-import { cx } from "@utils/cx";
 
 import { useInput } from "./hooks/useInput";
 import { useProgress } from "./progress";
@@ -21,19 +21,20 @@ import { RoamCallout } from "./roam/RoamCallout";
 import { WeaponReadout } from "./roam/WeaponReadout";
 import { createRoamStore, finishArrival, setSpawnPortal, type PortalTransition as Transition } from "./roam/roamStore";
 import { ShieldBar } from "./ShieldBar";
-import styles from "./Arcade.module.scss";
 import { ArcadeHud } from "./ArcadeHud";
 
 const RoamScene = dynamic(() => import("./roam/RoamScene"), {
   ssr: false,
-  loading: () => <p className={styles.arcade__loading}>spooling up the ship…</p>,
+  loading: () => <SceneLoading>spooling up the ship…</SceneLoading>,
 });
 
 /** Radar covers this much of the arena around the ship. */
 const RADAR_RANGE = roamConfig.arena.radius * 0.6;
 
-const HINT =
-  "WASD / arrows to steer · shift boost · ctrl / X brake · space fires · double-tap A/D to barrel roll · rings open projects · grab pickups for weapons and repairs";
+const HINT = {
+  keys: "WASD / arrows to steer · shift boost · ctrl / X brake · space fires · double-tap A/D to barrel roll · rings open projects · grab pickups for weapons and repairs",
+  touch: "hold to steer toward your finger and fire · rings open projects · grab pickups for weapons and repairs",
+} as const;
 
 /** Mirrors the LabHud --hud-ink / --hud-muted values so the radar canvas matches the chrome. */
 const RADAR_INK: Record<LabTheme, { ink: string; muted: string }> = {
@@ -43,12 +44,17 @@ const RADAR_INK: Record<LabTheme, { ink: string; muted: string }> = {
 
 type ArcadeRoamProps = {
   initialTheme?: LabTheme;
+  initialQuality?: QualityId;
 };
 
 /** Full-viewport free-roam arena for `/lab/arcade/roam`. Portals hand off to the project pages. */
-export function ArcadeRoam({ initialTheme }: ArcadeRoamProps) {
+export function ArcadeRoam({ initialTheme, initialQuality }: ArcadeRoamProps) {
   const router = useRouter();
-  const { theme, setTheme } = useLabViewState({ variantId: ARCADE_ROAM_ID, initialTheme });
+  const { theme, setTheme, quality, setQuality, degradeQuality, capability } = useLabViewState({
+    variantId: ARCADE_ROAM_ID,
+    initialTheme,
+    initialQuality,
+  });
   const { input, bind } = useInput();
   const progress = useProgress();
   const [store] = useState(() => createRoamStore(roamConfig.hull.healthMax));
@@ -72,13 +78,27 @@ export function ArcadeRoam({ initialTheme }: ArcadeRoamProps) {
   const onArrived = useCallback(() => finishArrival(store), [store]);
 
   return (
-    <div className={cx(styles.arcade, styles[`arcade--${theme}`])} {...bind}>
-      <div className={styles.arcade__canvas}>
-        <RoamScene theme={theme} inputRef={input} store={store} progress={progress} radarRef={radarRef} />
-      </div>
+    <LabStage
+      theme={theme}
+      capability={capability}
+      scene={
+        <RoamScene
+          quality={qualityPresets[quality]}
+          onDegrade={degradeQuality}
+          theme={theme}
+          inputRef={input}
+          store={store}
+          progress={progress}
+          radarRef={radarRef}
+        />
+      }
+      {...bind}
+    >
       <ArcadeHud
         theme={theme}
         onThemeChange={setTheme}
+        quality={quality}
+        onQualityChange={setQuality}
         mode="roam"
         progress={progress}
         gauge={<ShieldBar shield={game.health} shieldMax={game.healthMax} label="hull" />}
@@ -90,12 +110,12 @@ export function ArcadeRoam({ initialTheme }: ArcadeRoamProps) {
           { label: "portals", value: String(game.portals) },
           { label: "explored", value: `${explored} / ${projects.length}` },
         ]}
-        hint={HINT}
+        hint={HINT[capability?.touchOnly ? "touch" : "keys"]}
         center={game.phase === "dead" && <RoamCallout eyebrow="ship lost" title="Respawning…" />}
         controls={(hidden) => <TuningPanel hidden={hidden} />}
       />
       <PortalTransition transition={game.transition} onDone={onEntered} />
       <PortalTransition transition={game.arrival} direction="arrive" onDone={onArrived} />
-    </div>
+    </LabStage>
   );
 }

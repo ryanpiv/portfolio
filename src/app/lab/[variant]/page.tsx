@@ -35,7 +35,7 @@ export default async function LabVariantPage({
   const variant = getLabVariant(id);
   if (!variant) notFound();
 
-  const { theme, view } = parseLabQuery(query);
+  const { theme, quality, view } = parseLabQuery(query);
 
   return (
     <main aria-label={`${variant.title} physics field`}>
@@ -43,6 +43,7 @@ export default async function LabVariantPage({
         projects={projects}
         variant={variant}
         initialTheme={theme}
+        initialQuality={quality}
         initialView={view}
       />
     </main>
