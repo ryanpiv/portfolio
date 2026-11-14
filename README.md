@@ -1,6 +1,6 @@
 # Portfolio
 
-Personal portfolio hub: a Next.js site with a project grid that links to detail pages (and outward to live apps / GitHub).
+Personal portfolio hub: a Next.js site whose homepage offers two ways in — an arcade free-roam browser or the classic project grid — each linking to detail pages (and outward to live apps / GitHub).
 
 ## Stack
 

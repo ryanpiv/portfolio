@@ -1,11 +1,11 @@
-@use "../styles" as *;
+@use "../../styles" as *;
 
-.home {
+.projects {
   @include page-container;
   padding: $space-8 0 $space-7;
 }
 
-.home__sectionTitle {
+.projects__sectionTitle {
   @include mono-label(0.75rem, 0.12em);
   margin: 0 0 $space-5;
   color: $color-ink-muted;

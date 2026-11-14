@@ -14,7 +14,7 @@ export function Nav({ sidebarOpen, onToggleSidebar }: NavProps) {
         Ryan Piveteau
       </Link>
       <div className={styles.nav__actions}>
-        <Link href="/#projects" className={styles.nav__link}>
+        <Link href="/projects" className={styles.nav__link}>
           Projects
         </Link>
         <button

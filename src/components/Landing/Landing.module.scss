@@ -1,0 +1,366 @@
+@use "../../styles" as *;
+
+// Character-select style chooser. On wide screens the whole stage is sheared
+// by $slant so the divider between the two panels runs at 45°; each panel's
+// content is sheared back so text stays upright. The stage is wider than the
+// viewport by the shear overhang so the sheared corners never show the canvas.
+
+$slant: 45deg;
+$expand: 2.4; // flex-grow of the hovered panel (the other stays at 1)
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+$grow-ms: 620ms;
+$reveal-ms: 480ms;
+
+.landing {
+  --stage: calc(100dvh - #{$header-height});
+  --overhang: calc(var(--stage) * tan(#{$slant}));
+  // Keeps content clear of the slanted edge on the side that leans into the panel.
+  --diag-inset: clamp(4rem, 18vh, 9rem);
+  --edge-inset: clamp(1.5rem, 5vw, 4rem);
+
+  position: relative;
+  height: var(--stage);
+  overflow: hidden;
+}
+
+.landing__stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @include respond-up($bp-md) {
+    flex-direction: row;
+    width: calc(100% + var(--overhang));
+    margin-left: calc(var(--overhang) / -2);
+    transform: skewX(-#{$slant});
+  }
+}
+
+.landing__hint {
+  @include mono-label(0.6875rem, 0.18em);
+  position: absolute;
+  left: 50%;
+  bottom: $space-4;
+  margin: 0;
+  transform: translateX(-50%);
+  color: $color-ink-muted;
+  opacity: 0.7;
+  pointer-events: none;
+  display: none;
+
+  @include respond-up($bp-md) {
+    display: block;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Panel
+// ---------------------------------------------------------------------------
+
+.panel {
+  --accent: #{$color-accent};
+  --wash: rgba(242, 242, 240, 0.04);
+
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+  color: $color-ink;
+  text-decoration: none;
+  background: $color-surface;
+  transition:
+    flex-grow $grow-ms $ease,
+    filter $grow-ms $ease;
+
+  &:hover,
+  &:focus-visible {
+    flex-grow: $expand;
+    outline: none;
+  }
+
+  // The panel that is not being looked at steps back.
+  .landing__stage:hover &:not(:hover),
+  .landing__stage:focus-within &:not(:focus-visible) {
+    filter: brightness(0.55) saturate(0.6);
+  }
+
+  & + & {
+    border-top: 1px solid $color-border;
+
+    @include respond-up($bp-md) {
+      border-top: 0;
+      border-left: 1px solid $color-border;
+    }
+  }
+}
+
+// Mode backdrops, revealed when the curtains part. They live on the upright
+// (counter-sheared) inner so grid lines stay vertical; oversized sideways so
+// the shear never exposes a gap.
+.panel--arcade {
+  --accent: #{$color-showcase};
+  --wash: rgba(138, 180, 212, 0.1);
+  background: #0b0d14;
+
+  .panel__inner::before {
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 110%, var(--wash), transparent 70%),
+      repeating-linear-gradient(90deg, rgba(138, 180, 212, 0.08) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, rgba(138, 180, 212, 0.08) 0 1px, transparent 1px 64px);
+  }
+}
+
+.panel--classic {
+  --accent: #{$color-accent};
+  --wash: rgba(232, 228, 217, 0.08);
+
+  .panel__inner::before {
+    background:
+      radial-gradient(ellipse 70% 60% at 50% -10%, var(--wash), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(232, 228, 217, 0.06) 0 1px, transparent 1px 28px);
+  }
+}
+
+// Two pleated halves that cover the backdrop and slide outward on hover.
+.panel__curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 26px, rgba(255, 255, 255, 0.03) 26px 28px),
+    rgba($color-canvas, 0.78);
+  pointer-events: none;
+  transition: transform $grow-ms $ease;
+
+  &:nth-child(1) {
+    left: 0;
+    transform-origin: left center;
+  }
+
+  &:nth-child(2) {
+    right: 0;
+    transform-origin: right center;
+  }
+
+  .panel:hover &,
+  .panel:focus-visible & {
+    transform: scaleX(0.06);
+  }
+}
+
+.panel__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: $space-6 $space-5;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 calc(var(--overhang, 0px) * -1);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  transition: transform $grow-ms $ease;
+
+  @include respond-up($bp-md) {
+    transform: skewX($slant);
+  }
+
+  .panel--arcade & {
+    align-items: flex-start;
+    text-align: left;
+
+    @include respond-up($bp-md) {
+      padding-left: calc(var(--overhang) / 2 + var(--edge-inset));
+      padding-right: var(--diag-inset);
+    }
+  }
+
+  .panel--classic & {
+    @include respond-up($bp-md) {
+      align-items: flex-end;
+      text-align: right;
+      padding-right: calc(var(--overhang) / 2 + var(--edge-inset));
+      padding-left: var(--diag-inset);
+    }
+  }
+}
+
+.panel__slot {
+  @include mono-label(0.75rem, 0.2em);
+  margin-bottom: $space-5;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.panel__eyebrow {
+  @include eyebrow;
+  margin-bottom: $space-2;
+}
+
+.panel__title {
+  @include display-title(2.6rem, 5.2rem);
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    color $reveal-ms $ease,
+    font-size $grow-ms $ease;
+
+  .panel:hover &,
+  .panel:focus-visible & {
+    color: var(--accent);
+  }
+}
+
+.panel__tagline {
+  @include lede;
+  margin-top: $space-4;
+  max-width: 26rem;
+  min-height: 3.75rem; // two lines, so both titles sit level when idle
+  color: $color-ink;
+  transition: opacity $reveal-ms $ease;
+}
+
+// The panel that was not picked keeps only its name, smaller, and slides
+// toward its wide corner (the shear leaves the left panel wide at the top
+// and the right panel wide at the bottom).
+.landing__stage:hover .panel:not(:hover),
+.landing__stage:focus-within .panel:not(:focus-visible) {
+  @include respond-up($bp-md) {
+    &.panel--arcade .panel__inner {
+      transform: skewX($slant) translateY(-16%);
+    }
+
+    &.panel--classic .panel__inner {
+      transform: skewX($slant) translateY(16%);
+    }
+  }
+
+  .panel__title {
+    font-size: clamp(1.4rem, 2.4vw, 2.4rem);
+  }
+
+  .panel__tagline,
+  .panel__eyebrow {
+    opacity: 0;
+  }
+}
+
+.panel__eyebrow {
+  transition: opacity $reveal-ms $ease;
+}
+
+// The detail sheet unfurls (grid row 0fr → 1fr) when the panel is picked.
+.panel__detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    grid-template-rows $grow-ms $ease,
+    opacity $reveal-ms $ease 80ms,
+    transform $reveal-ms $ease 80ms;
+
+  .panel:hover &,
+  .panel:focus-visible & {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.panel__detailInner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: hidden;
+
+  .panel--classic & {
+    @include respond-up($bp-md) {
+      align-items: flex-end;
+    }
+  }
+}
+
+.panel__description {
+  margin-top: $space-5;
+  max-width: 30rem;
+  color: $color-ink-muted;
+  line-height: 1.6;
+}
+
+.panel__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-3 $space-6;
+  margin: $space-5 0 0;
+  max-width: 30rem;
+  width: 100%;
+
+  dt {
+    @include mono-label(0.6875rem, 0.14em);
+    color: var(--accent);
+  }
+
+  dd {
+    margin: $space-1 0 0;
+    font-size: 0.9375rem;
+  }
+}
+
+.panel__stat {
+  min-width: 0;
+}
+
+.panel__cta {
+  @include mono-link(0.875rem);
+  display: inline-block;
+  margin-top: $space-6;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: $radius-sm;
+  color: var(--accent);
+}
+
+.panel:focus-visible .panel__cta {
+  @include focus-ring;
+}
+
+// Touch-sized screens have no hover: drop the curtains and show the call to
+// action outright, keeping the sheet short enough for two stacked panels.
+@media (max-width: #{$bp-md - 1px}) {
+  .panel__curtain,
+  .panel__stats,
+  .panel__description {
+    display: none;
+  }
+
+  .panel__detail {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: none;
+  }
+
+  .panel__cta {
+    margin-top: $space-4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel__curtain,
+  .panel__detail,
+  .panel__title {
+    transition-duration: 1ms;
+  }
+}

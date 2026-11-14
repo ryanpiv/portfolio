@@ -41,7 +41,7 @@ export default async function ProjectPage({ params }: ProjectRouteProps) {
 
   return (
     <main className={styles.projectPage}>
-      <Link href="/#projects" className={styles.projectPage__back}>
+      <Link href="/projects" className={styles.projectPage__back}>
         ← Projects
       </Link>
       <ProjectHeader project={project} github={github} />

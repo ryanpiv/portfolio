@@ -28,7 +28,7 @@ export default function LabPage() {
       <PageHeader
         eyebrow="Lab"
         title="Experiments"
-        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a Star Fox-style rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the homepage grid is unchanged."
+        lede="The project registry rendered as spheres in a 3D volume — collisions, drag and fling, hover to slow, click to open — in three containment variants, plus a Star Fox-style rail shooter and a free-roam arena whose portals open the projects. Each has a dark and a light lighting preset. Proofs of concept; the classic grid at /projects is unchanged."
       />
 
       <ul className={styles.lab__list}>

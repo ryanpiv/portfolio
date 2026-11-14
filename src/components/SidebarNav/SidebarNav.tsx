@@ -14,7 +14,7 @@ type NavItem = { href: string; label: string; external?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home" },
-  { href: "/#projects", label: "Projects" },
+  { href: "/projects", label: "Projects" },
   { href: "/lab", label: "Lab" },
   { href: "https://github.com/ryanpiv", label: "GitHub", external: true },
 ];

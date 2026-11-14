@@ -150,6 +150,8 @@ Configured in `tsconfig.json` `paths` and mirrored in `jest.config.mjs`:
 
 **Lab** (`src/data/lab/`): `types.ts`, `variants.ts` (constraint + physics presets), `lighting.ts` (dark/light presets), `view.ts` (visitor options + guards), `starfox.ts` (ship/world/camera/combat/scoring tuning + page meta), `starfoxWaves.ts` (wave table — counts sum to the project total so every project flies once), `starfoxRoam.ts` (flight/arena/camera/scoring tuning + page meta), `achievements.ts` (milestone table: stat + threshold), `index.ts` barrel. Import from `@data/lab`.
 
+`/` is the chooser (`components/Landing`, copy in `data/landing.ts`): two sheared panels, character-select style, one into `/lab/starfox/roam` and one into `/projects`, the classic grid. Hover / focus widens a panel and unfurls its detail sheet; it is pure CSS (no client state), with the shear dropped and the call to action always visible below `$bp-md`.
+
 `/projects/[slug]` always exists — MDX when present, otherwise a short generic page from registry fields. `/lab/[variant]`, `/lab/starfox`, and `/lab/starfox/roam` read `?theme=&names=&lines=` via `parseLabQuery` and write them back with `buildLabUrl`.
 
 ## Testing
